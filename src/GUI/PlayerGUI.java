@@ -33,6 +33,8 @@ public class PlayerGUI extends JFrame {
     private int[] otherPlayersTime = {30, 30, 30};
 
     private List<Tile> tileList = new ArrayList<>();
+    private List<Tile> boardTileList = new ArrayList<>();  // 보드 패널에 있는 타일 리스트
+
     private Map<TileColor, Map<Integer, Integer>> tileCounts = new EnumMap<>(TileColor.class);
     
     // 채팅 관련 변수들
@@ -89,22 +91,29 @@ public class PlayerGUI extends JFrame {
                     Transferable transferable = dtde.getTransferable();
                     Tile droppedTile = (Tile) transferable.getTransferData(TileTransferable.TILE_FLAVOR);
                     
-                    // tileList에서 타일 제거
-                    tileList.remove(droppedTile);
+                    // 보드 타일 리스트에 이미 있는 타일인지 확인
+                    if (boardTileList.contains(droppedTile)) {
+                        // 보드 타일 리스트에서 해당 타일의 현재 인덱스 찾기
+                        int currentIndex = boardTileList.indexOf(droppedTile);
+                        
+                        // 타일을 리스트의 마지막으로 이동
+                        boardTileList.remove(currentIndex);
+                        boardTileList.add(droppedTile);
+                    } else {
+                        // 타일 패널에서 보드 패널로 처음 드래그되는 경우
+                        // 기존 코드 유지 (타일 리스트에서 제거하고 보드 타일 리스트에 추가)
+                        tileList.remove(droppedTile);
+                        boardTileList.add(droppedTile);
+                    }
                     
-                    // 보드 패널에 타일 라벨 추가
-                    JLabel tileLabel = createTileLabel(droppedTile);
-                    boardPanel.add(tileLabel);
+                    // 보드 패널 업데이트
+                    updateBoardPanel();
                     
                     // 타일 패널 업데이트
                     updateTilePanel();
                     
                     dtde.acceptDrop(DnDConstants.ACTION_MOVE);
                     dtde.dropComplete(true);
-                    
-                    // 보드 패널 새로고침
-                    boardPanel.revalidate();
-                    boardPanel.repaint();
                 } catch (Exception e) {
                     e.printStackTrace();
                     dtde.rejectDrop();
@@ -447,6 +456,21 @@ public class PlayerGUI extends JFrame {
         }
         tilePanel.revalidate();
         tilePanel.repaint();
+    }
+    
+    // 보드 패널을 갱신하는 메서드
+    private void updateBoardPanel() {
+        boardPanel.removeAll();  // 기존의 모든 타일 제거
+        
+        // boardTileList에 있는 모든 타일을 보드 패널에 추가
+        for (Tile tile : boardTileList) {
+            JLabel tileLabel = createTileLabel(tile);  // 타일에 해당하는 레이블 생성
+            boardPanel.add(tileLabel);  // 보드 패널에 레이블 추가
+        }
+        
+        // 보드 패널 갱신 (revalidate 및 repaint 호출)
+        boardPanel.revalidate();
+        boardPanel.repaint();
     }
 
     private TileColor getRandomColor() {
