@@ -111,8 +111,26 @@ public class PlayerGUI extends JFrame {
                 }
             }
         });
+        
+        // 화면 가로, 세로 크기 구하기
+        int screenWidth = getWidth();  // 화면의 가로 길이
+        int screenHeight = getHeight();  // 화면의 세로 길이
 
-        contentPane.add(boardPanel, BorderLayout.CENTER);
+        // 보드 패널의 가로, 세로 길이를 화면 크기에 비례하여 설정
+        int boardPanelWidth = (int) (screenWidth * 0.65);  // 화면 가로 길이의 70%
+        int boardPanelHeight = (int) (screenHeight * 0.7);  // 화면 세로 길이의 50%
+
+        // 보드 패널 크기 설정
+        boardPanel.setPreferredSize(new Dimension(boardPanelWidth, boardPanelHeight));
+
+        
+        // 보드 패널에 스크롤 기능 추가
+        JScrollPane boardScrollPane = new JScrollPane(boardPanel);
+        boardScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        boardScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        // 보드 패널을 contentPane에 추가
+        contentPane.add(boardScrollPane, BorderLayout.CENTER);
 
         // 하단 패널 설정 (기존 코드와 대부분 동일)
         JPanel playerPanel = new JPanel();
@@ -250,10 +268,10 @@ public class PlayerGUI extends JFrame {
         }
 
         // 스크롤 패널 설정
-        JScrollPane scrollPane = new JScrollPane(tilePanel);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        bottomPanel.add(scrollPane, BorderLayout.CENTER);
+        JScrollPane tilescrollPane = new JScrollPane(tilePanel);
+        tilescrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        tilescrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        bottomPanel.add(tilescrollPane, BorderLayout.CENTER);
 
         contentPane.add(bottomPanel, BorderLayout.SOUTH);
         setContentPane(contentPane);
