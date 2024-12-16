@@ -22,6 +22,7 @@ import java.util.List;
 import javax.swing.Timer;
 
 import model.tile.*;
+import model.player.Player;
 
 public class PlayerGUI extends JFrame {
 	private String username;
@@ -225,7 +226,13 @@ public class PlayerGUI extends JFrame {
         btn777.setMaximumSize(new Dimension(100, 75));
         btn777.setForeground(Color.BLACK);
         btn777.setFont(new Font("Arial", Font.BOLD, 20));
-        btn777.addActionListener(e -> sortTilesByNumber());
+        btn777.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 서버로 "p" 메시지 전송
+                SendMessage("n");
+            }
+        });
         buttonPanel.add(btn777);
 
         JButton btn789 = new JButton("789");
@@ -233,7 +240,13 @@ public class PlayerGUI extends JFrame {
         btn789.setMaximumSize(new Dimension(100, 75));
         btn789.setForeground(Color.BLACK);
         btn789.setFont(new Font("Arial", Font.BOLD, 20));
-        btn789.addActionListener(e -> sortTilesByColor());
+        btn789.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 서버로 "p" 메시지 전송
+                SendMessage("c");
+            }
+        });
         buttonPanel.add(btn789);
         
         JButton addButton = new JButton("+");
@@ -241,18 +254,12 @@ public class PlayerGUI extends JFrame {
         addButton.setMaximumSize(new Dimension(100, 75));
         addButton.setForeground(Color.BLACK);
         addButton.setFont(new Font("Arial", Font.BOLD, 20));
-        addButton.addActionListener(e -> {
-            TileColor randomColor = getRandomColor();
-            int randomNumber = new Random().nextInt(13) + 1;
-            Tile newTile = new Tile(randomNumber, randomColor);
-            
-            tileList.add(newTile);
-            
-            JLabel tileLabel = createTileLabel(newTile);
-            tilePanel.add(tileLabel);
-            
-            tilePanel.revalidate();
-            tilePanel.repaint();
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 서버로 "p" 메시지 전송
+                SendMessage("p");
+            }
         });
         buttonPanel.add(addButton);
 

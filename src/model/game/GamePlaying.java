@@ -170,6 +170,12 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
             tileListManage.tileSortToNumber(playerList);
             return false;
         }
+        
+        // 색깔 기준으로 정렬 (c)
+        else if (Objects.equals(playChoice, "c") || Objects.equals(playChoice, "C")) {
+            tileListManage.tileSortToColor(playerList);
+            return false;
+        }
 
         // 카드 내기 (s)
         else if (Objects.equals(playChoice, "s") || Objects.equals(playChoice, "S")) {

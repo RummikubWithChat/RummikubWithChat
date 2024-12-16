@@ -10,11 +10,12 @@ import static model.game.GameInitAndEndSet.gameEnd;
 import static network.JavaChatServer.sendToClient;
 
 public class TileList {
+	//전체 타일 목록
     public static ArrayList<Tile> noPickTileList = new ArrayList<Tile>(106);
 
     public void push() {
         int i = 0;
-        for (int r = 0; r < 2; r++) {
+        for (int r = 0; r < 2; r++) { //타일 세트 2번 생성
             for (TileColor tile : TileColor.values()) {
                 if (tile == TileColor.RED) {
                     for (int j = 1; j < 14; j++) {
@@ -57,7 +58,18 @@ public class TileList {
 
         return popElement;
     }
+    
+ // 플레이어의 타일 리스트에 랜덤으로 타일 추가
+    public void addTileToPlayer(ArrayList<Tile> playerTileList) {
+        if (!noPickTileList.isEmpty()) {
+            // 타일 리스트에서 랜덤으로 타일을 하나 뽑아 플레이어의 타일 리스트에 추가
+            int randomIndex = new Random().nextInt(noPickTileList.size());
+            Tile tile = noPickTileList.remove(randomIndex); // 타일을 리스트에서 제거
+            playerTileList.add(tile); // 플레이어의 타일 리스트에 추가
+        }
+    }
 
+    //리스트 크기 반환
     public static int getStackSize(ArrayList<Tile> list) {
         return list.size();
     }
@@ -82,6 +94,7 @@ public class TileList {
         }
     }
 
+   //연결된 타일들 리스트 출력
     public void tileLinkListPrint(ArrayList<LinkedList<Tile>> list){
         System.out.println();
 
@@ -114,6 +127,7 @@ public class TileList {
         System.out.println();
     }
 
+    //하나의 연결된 타일 리스트 
     public void tileLinkPrint(LinkedList<Tile> tile){
         for (Tile value : tile) {
             TileColor color = value.color;
@@ -162,10 +176,26 @@ public class TileList {
     }
 
 
+    //색깔 기준으로 정렬 
     public void tileSortToColor(ArrayList<Tile> tileList) {
+        tileList.sort(new Comparator<Tile>() {
+            @Override
+            public int compare(Tile o1, Tile o2) {
+                // 먼저 색상을 기준으로 정렬 
+                int colorComparison = o1.color.compareTo(o2.color);
+                
+                // 색상이 같다면 숫자를 기준으로 정렬
+                if (colorComparison == 0) {
+                    return o1.number - o2.number;
+                }
+                
+                return colorComparison;
+            }
+        });
+        System.out.println("색상 기준 정렬 완료");
     }
 
-    // 타일 리스트 정렬
+    // 숫자 기준으로 정렬 
     public void tileSortToNumber(ArrayList<Tile> tileList) {
         tileList.sort(new Comparator<Tile>() {
             @Override
