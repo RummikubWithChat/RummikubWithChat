@@ -389,7 +389,7 @@ public class PlayerGUI extends JFrame {
                         AppendText(msg);
                     }
                     
-                    AppendText(msg);
+                    //AppendText(msg);
                 } catch (IOException e) {
                     AppendText("dis.read() error");
                     try {
