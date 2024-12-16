@@ -1,29 +1,34 @@
 package model.game;
 
+import model.player.Player;
 import model.tile.Tile;
 import model.tile.TileList;
+import network.JavaChatServer;
 
 import java.util.*;
 
 import static model.tile.TileList.noPickTileList;
 
 public class GameInitAndEndSet {
-    public static void gameInitSetting(TileList tileManage,
-                                       ArrayList<Tile> playerOneTileList, 
-                                       ArrayList<Tile> playerTwoTileList,
-                                       ArrayList<Tile> playerThreeTileList,
-                                       ArrayList<Tile> playerFourTileList) {
+	// 게임 시작 세팅
+    public static void gameInitSetting(TileList tileManage, List<Player> players) {
         tileManage.push();
         tileManage.tileShuffle(noPickTileList);
 
+        // 타일 배분
         for (int i = 0; i < 14; i++) {
-            tileManage.noPickTileDivide(playerOneTileList);
-            tileManage.noPickTileDivide(playerTwoTileList);
-            tileManage.noPickTileDivide(playerThreeTileList);
-            tileManage.noPickTileDivide(playerFourTileList);
+            for (int j = 0; j < players.size(); j++) {
+                tileManage.noPickTileDivide(players.get(j).tileList);
+            }
+        }
+        
+        // 타일 리스트를 각 클라이언트에 전달
+        for (Player player : players) {
+        	JavaChatServer.sendTileListToClient(player);  // 각 플레이어에게 타일 리스트 전송
         }
     }
 
+    // 게임 종료 조건 체크
     public static int gameEndCheck(ArrayList<Tile> tileList, 
     							   ArrayList<Tile> playerOneTileList,
                                    ArrayList<Tile> playerTwoTileList,

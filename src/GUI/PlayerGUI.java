@@ -15,9 +15,13 @@ import java.awt.dnd.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+//import GUI.PlayerGUI.TileTransferable;
+
 import java.util.*;
 import java.util.List;
 import javax.swing.Timer;
+
+import model.tile.*;
 
 public class PlayerGUI extends JFrame {
 	private String username;
@@ -34,7 +38,7 @@ public class PlayerGUI extends JFrame {
 
     private List<Tile> tileList = new ArrayList<>();
     private List<Tile> boardTileList = new ArrayList<>();  // 보드 패널에 있는 타일 리스트
-
+    
     private Map<TileColor, Map<Integer, Integer>> tileCounts = new EnumMap<>(TileColor.class);
     
     // 채팅 관련 변수들
@@ -200,6 +204,7 @@ public class PlayerGUI extends JFrame {
         });
 
 
+
         JPanel exitButtonPanel = new JPanel();
         exitButtonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
         
@@ -266,21 +271,21 @@ public class PlayerGUI extends JFrame {
         tilePanel.setPreferredSize(new Dimension(750, 400));
 
         // 초기 타일 랜덤 생성
-        for (int i = 0; i < 14; i++) {
-            TileColor randomColor = getRandomColor();
-            int randomNumber = new Random().nextInt(13) + 1;
-            Tile tile = new Tile(randomNumber, randomColor);
-            tileList.add(tile);
-
-            JLabel tileLabel = createTileLabel(tile);
-            tilePanel.add(tileLabel);
-        }
+//        for (int i = 0; i < 14; i++) {
+//            TileColor randomColor = getRandomColor();
+//            int randomNumber = new Random().nextInt(13) + 1;
+//            Tile tile = new Tile(randomNumber, randomColor);
+//            tileList.add(tile);
+//
+//            JLabel tileLabel = createTileLabel(tile);
+//            tilePanel.add(tileLabel);
+//        }
 
         // 스크롤 패널 설정
-        JScrollPane tilescrollPane = new JScrollPane(tilePanel);
-        tilescrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        tilescrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        bottomPanel.add(tilescrollPane, BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(tilePanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        bottomPanel.add(scrollPane, BorderLayout.CENTER);
 
         contentPane.add(bottomPanel, BorderLayout.SOUTH);
         setContentPane(contentPane);
@@ -373,6 +378,17 @@ public class PlayerGUI extends JFrame {
                 try {
                     // Use readUTF to read messages
                     String msg = dis.readUTF();
+                    
+                    // '/tileList'로 시작하는 메시지인지 확인
+                    if (msg.startsWith("/tileList")) {
+                        // 타일 리스트 메시지 처리
+                        List<Tile> newTileList = parseTileListFromMessage(msg);
+                        updateTilePanel(newTileList);  // 타일 패널 업데이트
+                    } else {
+                        // 다른 메시지는 화면에 표시
+                        AppendText(msg);
+                    }
+                    
                     AppendText(msg);
                 } catch (IOException e) {
                     AppendText("dis.read() error");
@@ -388,6 +404,35 @@ public class PlayerGUI extends JFrame {
             }
         }
     }
+    
+    private List<Tile> parseTileListFromMessage(String message) {
+        // 메시지에서 "/tileList " 이후의 부분을 파싱하여 List<Tile>로 변환
+        String tileListString = message.substring(9);  // "/tileList " 이후의 부분
+        System.out.println("tileListString: " + tileListString);  // 디버깅: 파싱할 문자열 출력
+        List<Tile> newTileList = new ArrayList<>();
+
+        // 메시지에서 각 타일을 "[번호, 색상]" 형식으로 구분하기 위해 파싱
+        // 첫 번째 및 마지막 문자인 "["와 "]"를 제거한 후 타일들을 ',' 기준으로 분리
+        String[] tileArray = tileListString.replace("[", "").replace("]", "").split(", ");
+        System.out.println("tileArray: " + Arrays.toString(tileArray));  // 디버깅: 배열 출력
+
+        // 타일을 "번호"와 "색상"으로 분리하여 Tile 객체 생성
+        for (int i = 0; i < tileArray.length; i += 2) {
+            try {
+                int number = Integer.parseInt(tileArray[i].trim());  // 번호 부분 파싱
+                TileColor color = TileColor.valueOf(tileArray[i + 1].trim().toUpperCase());  // 색상 부분 파싱
+
+                // Tile 객체 생성 후 리스트에 추가
+                newTileList.add(new Tile(number, color));
+            } catch (Exception e) {
+                System.err.println("Error parsing tile: " + tileArray[i] + ", " + tileArray[i + 1]);  // 예외 발생 시 오류 메시지 출력
+                e.printStackTrace();
+            }
+        }
+
+        return newTileList;
+    }
+
     
     // Server에게 network으로 전송
     public void SendMessage(String msg) {
@@ -409,7 +454,12 @@ public class PlayerGUI extends JFrame {
     
     // 타일 라벨 생성 메서드 수정
     private JLabel createTileLabel(Tile tile) {
-        String tileImage = tile.getColor().name() + "_" + tile.getNumber() + ".png";
+        String tileImage;
+        if (tile.getNumber() == 999) {
+            tileImage = "joker.png";  // 999인 경우 joker 이미지 사용
+        } else {
+            tileImage = tile.getColor().name() + "_" + tile.getNumber() + ".png";
+        }
         ImageIcon tileIcon = new ImageIcon("images/" + tileImage);
         Image image = tileIcon.getImage();
 
@@ -458,7 +508,7 @@ public class PlayerGUI extends JFrame {
         tilePanel.repaint();
     }
     
-    // 보드 패널을 갱신하는 메서드
+ // 보드 패널을 갱신하는 메서드
     private void updateBoardPanel() {
         boardPanel.removeAll();  // 기존의 모든 타일 제거
         
@@ -540,4 +590,25 @@ public class PlayerGUI extends JFrame {
             return true;
         }
     }
+    
+    // 타일 패널 업데이트
+    public void updateTilePanel(List<Tile> newTileList) {
+        // 1. 기존 타일 패널 내용 제거
+        tilePanel.removeAll();
+
+        // 2. 새로운 타일 리스트에 따라 타일 추가
+        for (Tile tile : newTileList) {
+            JLabel tileLabel = createTileLabel(tile); // 타일에 대한 JLabel 생성
+            tilePanel.add(tileLabel); // 타일 패널에 추가
+        }
+
+        // 3. 타일 패널 업데이트
+        tilePanel.revalidate(); // 레이아웃 갱신
+        tilePanel.repaint();    // 화면 다시 그리기
+
+        // 4. 내부 타일 리스트 갱신 (필요한 경우)
+        tileList.clear();
+        tileList.addAll(newTileList);
+    }
+
 }

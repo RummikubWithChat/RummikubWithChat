@@ -90,7 +90,7 @@ public class Server {
         List<Player> players = new ArrayList<>(playerMap.keySet());
 
         // 게임 초기 설정
-        gameInitSetting(tileManage, players.get(0).tileList, players.get(1).tileList, players.get(2).tileList, players.get(3).tileList);
+        gameInitSetting(tileManage, players);
 
         // GamePlaying 객체 생성 및 실행
         GamePlaying gamePlaying = new GamePlaying(boardManage, tileManage, players.get(0), players.get(1), players.get(2), players.get(3));

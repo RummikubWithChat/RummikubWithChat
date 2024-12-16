@@ -8,4 +8,17 @@ public class Tile {
         this.number = number;
         this.color = color;
     }
+    
+    public int getNumber() {
+        return number;
+    }
+
+    public TileColor getColor() {
+        return color;
+    }
+    
+    @Override
+    public String toString() {
+        return "[" + number + ", " + color + "]";
+    }
 }

@@ -19,4 +19,17 @@ public class Player {
     public String getName() {
     	return this.name;
     }
+    
+    public String tileListToString() {
+        StringBuilder sb = new StringBuilder();
+        for (Tile tile : tileList) {
+            sb.append(tile.toString()).append(", ");
+        }
+        // 마지막 쉼표 제거
+        if (sb.length() > 0) {
+            sb.setLength(sb.length() - 2);
+        }
+        return sb.toString();
+    }
+
 }

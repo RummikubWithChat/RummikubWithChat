@@ -1,12 +1,18 @@
 package GUI;
 
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class howToPlay extends JFrame {
     public howToPlay() {

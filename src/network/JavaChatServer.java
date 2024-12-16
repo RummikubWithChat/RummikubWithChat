@@ -156,22 +156,16 @@ public class JavaChatServer extends JFrame {
             players.add(player); // players 리스트에 추가
             playerToUserServiceMap.put(player, userService);   
             
+            // 각 플레이어에게 게임 시작 메시지 전송
             sendToClient(player, "Game Start!");
         }
 
         // 게임 초기화
-        gameInitSetting(tileManage, players.get(0).tileList, players.get(1).tileList, players.get(2).tileList, players.get(3).tileList);
+        gameInitSetting(tileManage, players);
 
         // 게임 진행
         GamePlaying gamePlaying = new GamePlaying(boardManage, tileManage, players.get(0), players.get(1), players.get(2), players.get(3));
         gamePlaying.gamePlay();
-
-        // 게임 시작 메시지 전송
-        String startMessage = "게임을 시작합니다!";
-        for (UserService user : UserVec) {
-            user.WriteOne(startMessage); // 각 클라이언트에게 게임 시작 메시지 전송
-        }
-    	
     }
     
     //JtextArea에 문자열을 출력해 주는 기능을 수행하는 함수
@@ -190,6 +184,7 @@ public class JavaChatServer extends JFrame {
         }
     }
 
+    // 플레이어에게 응답 받기
     public static String getInputFromPlayer(Player player) {
         // Player와 연결된 UserService 객체 찾기
         UserService userService = playerToUserServiceMap.get(player);
@@ -213,8 +208,14 @@ public class JavaChatServer extends JFrame {
             return null; // 연결된 UserService가 없으면 null 반환
         }
     }
-
-
+    
+    public static void sendTileListToClient(Player player) {
+        UserService userService = playerToUserServiceMap.get(player);
+        if (userService != null) {
+            // 타일 리스트를 직렬화하여 전송 (혹은 원하는 포맷으로)
+            userService.WriteOne("/tileList " + player.tileListToString());  // 예시로 간단히 출력
+        }
+    }
     
     // User 당 생성되는 Thread, 유저의 수만큼 스레스 생성
     // Read One 에서 대기 -> Write All

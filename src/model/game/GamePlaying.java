@@ -4,6 +4,8 @@ import model.board.Board;
 import model.player.Player;
 import model.tile.Tile;
 import model.tile.TileList;
+import network.JavaChatServer;
+
 import java.util.*;
 
 import static model.board.Board.onBoardTileList;
@@ -15,13 +17,15 @@ import static model.tile.TileList.noPickTileList;
 
 public record GamePlaying(Board boardManage, TileList tileListManage,
                           Player player1, Player player2, Player player3, Player player4) {
-    private static int playerTurn = 1;
+    private static int playerTurn = 1; // 플레이어 순서
 
     public void gamePlay() {
+    	// 게임 진행 중
         while (gameEndCheck(noPickTileList, player1.tileList, player2.tileList, player3.tileList, player4.tileList) == 0) {
             gamePlayToTurn();
         }
 
+        // 게임 종료
         int result = gameEndCheck(noPickTileList, player1.tileList, player2.tileList, player3.tileList, player4.tileList);
         if (result != 0) {
         	gameEnd(result);
@@ -75,6 +79,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
             }
         } while (!turnComplete);
 
+        // 다음 턴으로 넘기기
         if ((Objects.equals(playChoice, "p")) || (Objects.equals(playChoice, "P"))) {
             if (playerTurn == 1) 
             	playerTurn = 2;
@@ -217,6 +222,8 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
                 System.out.println("] 카드가 추가되었습니다.");
             }
 
+            JavaChatServer.sendTileListToClient(player);
+            
             return true;
         }
 

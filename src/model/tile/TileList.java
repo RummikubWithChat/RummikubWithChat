@@ -3,6 +3,7 @@ package model.tile;
 import java.util.*;
 
 import model.player.Player;
+import network.JavaChatServer;
 
 import static model.game.GameInitAndEndSet.gameEnd;
 //import static network.Server.sendToClient;
@@ -61,6 +62,7 @@ public class TileList {
         return list.size();
     }
 
+    // 타일 출력
     public void tilePrint(Tile tile){
         TileColor color = tile.color;
 
@@ -130,6 +132,7 @@ public class TileList {
         }
     }
 
+    // 플레이어의 타일 리스트 출력
     public void tileListPrint(ArrayList<Tile> list, Player player) {
         // 출력 내용 저장용 StringBuilder
         StringBuilder sb = new StringBuilder();
@@ -154,15 +157,15 @@ public class TileList {
         }
 
         // 생성된 출력 내용 플레이어에게 전송
-        sendToClient(player, sb.toString());
+        JavaChatServer.sendTileListToClient(player);
         System.out.print(sb.toString());
-        
     }
 
 
     public void tileSortToColor(ArrayList<Tile> tileList) {
     }
 
+    // 타일 리스트 정렬
     public void tileSortToNumber(ArrayList<Tile> tileList) {
         tileList.sort(new Comparator<Tile>() {
             @Override
