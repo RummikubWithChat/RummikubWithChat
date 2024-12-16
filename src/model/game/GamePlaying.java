@@ -33,49 +33,32 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
     }
 
     private void gamePlayToTurn() {
-        boolean turnComplete = false;
+        boolean turnComplete = false; //턴의 완료 상태
         String playChoice = "1";
         Player currentPlayer = getCurrentPlayer();
 
         do {
         	System.out.println("현재 턴: " + playerTurn);
-            tileListManage.tileLinkListPrint(onBoardTileList);
+            tileListManage.tileLinkListPrint(onBoardTileList); //보드 타일 출력 
             if (playerTurn == 1) {
                 tileListManage.tileListPrint(player1.tileList, player1);
-
-                if (Objects.equals(player1.name, "ai") || Objects.equals(player1.name, "AI")) {
-                    turnComplete = aiChoice();
-                } else {
-                    playChoice = pickOrShow(currentPlayer);
-                    turnComplete = choiceCheck(playChoice);
-                }
+                playChoice = pickOrShow(currentPlayer);
+                turnComplete = choiceCheck(playChoice);
+                
             } else if (playerTurn == 2){
                 tileListManage.tileListPrint(player2.tileList, player2);
-
-                if (Objects.equals(player2.name, "ai") || Objects.equals(player2.name, "AI")) {
-                    turnComplete = aiChoice();
-                } else {
-                    playChoice = pickOrShow(currentPlayer);
-                    turnComplete = choiceCheck(playChoice);
-                }
+                playChoice = pickOrShow(currentPlayer);
+                turnComplete = choiceCheck(playChoice);
+                
             } else if (playerTurn == 3){
                 tileListManage.tileListPrint(player3.tileList, player3);
-
-                if (Objects.equals(player3.name, "ai") || Objects.equals(player3.name, "AI")) {
-                    turnComplete = aiChoice();
-                } else {
-                    playChoice = pickOrShow(currentPlayer);
-                    turnComplete = choiceCheck(playChoice);
-                }
+                playChoice = pickOrShow(currentPlayer);
+                turnComplete = choiceCheck(playChoice);
+                
             } else {
                 tileListManage.tileListPrint(player4.tileList, player4);
-
-                if (Objects.equals(player4.name, "ai") || Objects.equals(player4.name, "AI")) {
-                    turnComplete = aiChoice();
-                } else {
-                    playChoice = pickOrShow(currentPlayer);
-                    turnComplete = choiceCheck(playChoice);
-                }
+                playChoice = pickOrShow(currentPlayer);
+                turnComplete = choiceCheck(playChoice);
             }
         } while (!turnComplete);
 
@@ -114,53 +97,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
         };
     }
 
-    private boolean aiChoice() {
-        ArrayList<Tile> playerList = null;
-        String playerName = null;
-        boolean isTurnComplete = false;
-
-        if (playerTurn == 1) {
-            playerList = player1.tileList;
-            playerName = player1.name;
-        } else if (playerTurn == 2) {
-            playerList = player2.tileList;
-            playerName = player2.name;
-        } else if (playerTurn == 3) {
-            playerList = player3.tileList;
-            playerName = player3.name;
-        } else {
-        	playerList = player4.tileList;
-            playerName = player4.name;
-        }
-        tileListManage.tileSortToNumber(playerList);
-
-        for (int i = 0; i < playerList.size() - 3; i++) {
-            // 숫자가 같고 색깔이 다를 때 타일 3개 내기 ex) 파랑11, 노랑11, 주황11
-            if (isSameNumber(playerList, i)) {
-                cardInsert(playerList, i);
-                isTurnComplete = true;
-            }
-
-            //색깔이 같고 타일 3개가 연속적인 숫자라면 내기
-            if (isConstantNumber(playerList, i)) {
-                cardInsert(playerList, i);
-                isTurnComplete = true;
-            }
-        }
-
-        if (!isTurnComplete) {
-            if (tileListManage.isTileListNull(noPickTileList)) {
-            } else {
-                Tile tile = tileListManage.noPickTileDivide(playerList);
-                System.out.print(playerName + "에게 [");
-                tileListManage.tilePrint(tile);
-                System.out.println("] 카드가 추가되었습니다.");
-            }
-        }
-
-        return true;
-    }
-
+    //연속된 숫자의 타일인지 확인하는 메서드 
     private Boolean isConstantNumber(ArrayList<Tile> playerList, int i){
         return (playerList.get(i).number == playerList.get(i + 1).number &&
                     playerList.get(i + 1).number == playerList.get(i + 2).number) &&
@@ -170,6 +107,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
                         && playerList.get(i).color != playerList.get(i + 2).color);
     }
 
+    //동일한 숫자의 타일인지 확인하는 메서드 
     private Boolean isSameNumber(ArrayList<Tile> playerList, int i){
         return (playerList.get(i).number == playerList.get(i + 1).number - 1 &&
                 playerList.get(i + 1).number - 1 == playerList.get(i + 2).number - 2) &&
@@ -181,12 +119,12 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
 
     private void cardInsert(ArrayList<Tile> playerList, int i){
         for (int j = 0; j < 3; j++) {
-            temporaryTile.add(playerList.get(i));
-            playerList.remove(i);
+            temporaryTile.add(playerList.get(i)); //임시 타일에 추가 
+            playerList.remove(i); //플레이어 타일 리스트에서 해당 타일 제거
         }
 
-        onBoardTileList.add(temporaryTile);
-        temporaryTile = new LinkedList<Tile>();
+        onBoardTileList.add(temporaryTile); //보드 타일에 추가 
+        temporaryTile = new LinkedList<Tile>(); //플레이어 타일 리스트에서 해당 타일 제거 
     }
 
     private Boolean choiceCheck(String playChoice) {
@@ -248,7 +186,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
 
             return false;
         } else if (Objects.equals(playChoice, "e") || Objects.equals(playChoice, "E")) {
-            return true;
+            return true; //턴 종료 
         } else {
             System.out.println("잘못된 선택지입니다. 다시 입력하세요.");
             pickOrShow(player);
