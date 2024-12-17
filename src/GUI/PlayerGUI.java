@@ -47,7 +47,7 @@ public class PlayerGUI extends JFrame {
     private JTextArea chatArea;
     private JTextField messageField;
     private JButton sendButton;
-    private JButton returnButton;
+    private JButton nextButton;
     private JButton submitButton;
     
     private JLabel lblUserName;
@@ -327,17 +327,17 @@ public class PlayerGUI extends JFrame {
 		sendButton = new JButton("⬆");
 		sendButton.setBounds(288, 364, 76, 40);
 		
-		returnButton = new JButton("↺︎");
-		returnButton.setPreferredSize(new Dimension(86, 50));
-		returnButton.setFont(new Font("Gothic", Font.BOLD, 25));
-		//returnButton.setBackground(new Color(255, 127, 80));
-		returnButton.setForeground(new Color(255, 127, 80));
+		nextButton = new JButton("End︎");
+		nextButton.setPreferredSize(new Dimension(86, 50));
+		nextButton.setFont(new Font("Gothic", Font.BOLD, 20));
+		//returnButton.setForeground(new Color(80, 255, 150));
+		nextButton.setForeground(new Color(255, 127, 80));
 		
-		submitButton = new JButton("✓");
+		submitButton = new JButton("✓︎");
 		submitButton.setPreferredSize(new Dimension(86, 50));
-		submitButton.setFont(new Font("Gothic", Font.BOLD, 20));
-		//submitButton.setBackground(new Color(144, 238, 144));
-		submitButton.setForeground(new Color(144, 238, 144));
+		submitButton.setFont(new Font("Gothic", Font.BOLD, 25));
+		//submitButton.setForeground(new Color(255, 127, 80));
+		submitButton.setForeground(new Color(80, 255, 150));
 		
 		
 		inputPanel.add(messageField, BorderLayout.CENTER);
@@ -346,8 +346,8 @@ public class PlayerGUI extends JFrame {
         btnPanel.setLayout(new FlowLayout()); // 버튼을 가로로 나열
         btnPanel.setBackground(new Color(25, 25, 112));
 
-        btnPanel.add(returnButton);
         btnPanel.add(submitButton);
+        btnPanel.add(nextButton);
 
         // 패널을 SOUTH에 추가
         inputPanel.add(btnPanel, BorderLayout.SOUTH);
