@@ -43,7 +43,7 @@ public class PlayerGUI extends JFrame {
     private JTextArea chatArea;
     private JTextField messageField;
     private JButton sendButton;
-    private JButton nextButton;
+    private JButton endButton;
     private JButton submitButton;
     
     private JLabel lblUserName;
@@ -323,17 +323,31 @@ public class PlayerGUI extends JFrame {
 		sendButton = new JButton("⬆");
 		sendButton.setBounds(288, 364, 76, 40);
 		
-		nextButton = new JButton("End︎");
-		nextButton.setPreferredSize(new Dimension(86, 50));
-		nextButton.setFont(new Font("Gothic", Font.BOLD, 20));
+		endButton = new JButton("End︎");
+		endButton.setPreferredSize(new Dimension(86, 50));
+		endButton.setFont(new Font("Gothic", Font.BOLD, 20));
 		//returnButton.setForeground(new Color(80, 255, 150));
-		nextButton.setForeground(new Color(255, 127, 80));
+		endButton.setForeground(new Color(255, 127, 80));
+        endButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 서버로 "e" 메시지 전송
+                SendMessage("e");
+            }
+        });
 		
 		submitButton = new JButton("✓︎");
 		submitButton.setPreferredSize(new Dimension(86, 50));
 		submitButton.setFont(new Font("Gothic", Font.BOLD, 25));
 		//submitButton.setForeground(new Color(255, 127, 80));
 		submitButton.setForeground(new Color(80, 255, 150));
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 서버로 "-1" 메시지 전송
+                SendMessage("-1");
+            }
+        });
 		
 		
 		inputPanel.add(messageField, BorderLayout.CENTER);
@@ -343,7 +357,7 @@ public class PlayerGUI extends JFrame {
         btnPanel.setBackground(new Color(25, 25, 112));
 
         btnPanel.add(submitButton);
-        btnPanel.add(nextButton);
+        btnPanel.add(endButton);
 
         // 패널을 SOUTH에 추가
         inputPanel.add(btnPanel, BorderLayout.SOUTH);
