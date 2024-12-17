@@ -14,16 +14,12 @@ import java.net.Socket;
 import java.awt.dnd.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-
-//import GUI.PlayerGUI.TileTransferable;
 
 import java.util.*;
 import java.util.List;
 import javax.swing.Timer;
 
 import model.tile.*;
-import model.player.Player;
 
 public class PlayerGUI extends JFrame {
 	private String username;
