@@ -233,7 +233,7 @@ public class PlayerGUI extends JFrame {
         	@Override
             public void actionPerformed(ActionEvent e) {
                 // 서버로 타일 리스트의 숫자 정렬 요청
-                SendMessage("/tileSortToColor");
+                SendMessage("/tileSortToNumber");
             }
         });
         buttonPanel.add(btn777);
@@ -246,8 +246,8 @@ public class PlayerGUI extends JFrame {
         btn789.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 서버로 타일 리스트의 숫자 정렬 요청
-                SendMessage("/tileSortToNumber");
+                // 서버로 타일 색깔로 정렬 요청
+                SendMessage("/tileSortToColor");
             }
         });
         buttonPanel.add(btn789);
@@ -531,7 +531,7 @@ public class PlayerGUI extends JFrame {
         tilePanel.repaint();
     }
     
- // 보드 패널을 갱신하는 메서드
+    // 보드 패널을 갱신하는 메서드
     private void updateBoardPanel() {
         boardPanel.removeAll();  // 기존의 모든 타일 제거
         
