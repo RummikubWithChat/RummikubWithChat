@@ -14,6 +14,7 @@ import java.net.Socket;
 import java.awt.dnd.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 //import GUI.PlayerGUI.TileTransferable;
 
@@ -46,6 +47,8 @@ public class PlayerGUI extends JFrame {
     private JTextArea chatArea;
     private JTextField messageField;
     private JButton sendButton;
+    private JButton returnButton;
+    private JButton submitButton;
     
     private JLabel lblUserName;
 
@@ -229,7 +232,7 @@ public class PlayerGUI extends JFrame {
         btn777.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 서버로 "p" 메시지 전송
+                // 서버로 "n" 메시지 전송
                 SendMessage("n");
             }
         });
@@ -243,7 +246,7 @@ public class PlayerGUI extends JFrame {
         btn789.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 서버로 "p" 메시지 전송
+                // 서버로 "c" 메시지 전송
                 SendMessage("c");
             }
         });
@@ -324,8 +327,30 @@ public class PlayerGUI extends JFrame {
 		sendButton = new JButton("⬆");
 		sendButton.setBounds(288, 364, 76, 40);
 		
+		returnButton = new JButton("↺︎");
+		returnButton.setPreferredSize(new Dimension(86, 50));
+		returnButton.setFont(new Font("Gothic", Font.BOLD, 25));
+		//returnButton.setBackground(new Color(255, 127, 80));
+		returnButton.setForeground(new Color(255, 127, 80));
+		
+		submitButton = new JButton("✓");
+		submitButton.setPreferredSize(new Dimension(86, 50));
+		submitButton.setFont(new Font("Gothic", Font.BOLD, 20));
+		//submitButton.setBackground(new Color(144, 238, 144));
+		submitButton.setForeground(new Color(144, 238, 144));
+		
+		
 		inputPanel.add(messageField, BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
+        JPanel btnPanel = new JPanel(); // 추가 패널 생성
+        btnPanel.setLayout(new FlowLayout()); // 버튼을 가로로 나열
+        btnPanel.setBackground(new Color(25, 25, 112));
+
+        btnPanel.add(returnButton);
+        btnPanel.add(submitButton);
+
+        // 패널을 SOUTH에 추가
+        inputPanel.add(btnPanel, BorderLayout.SOUTH);
 		
         chatPanel.add(inputPanel, BorderLayout.SOUTH);
        	
