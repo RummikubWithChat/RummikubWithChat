@@ -420,6 +420,21 @@ public class PlayerGUI extends JFrame {
                 try {
                     // Use readUTF to read messages
                     String msg = dis.readUTF();
+
+                    if (msg.equals("Game Start!")) {
+                        SwingUtilities.invokeLater(() -> {
+                            // PlayerGUI 보이게 하기
+                            setVisible(true);
+                            
+                            // 이전 nameGUI 창 닫기
+                            for (Window window : Window.getWindows()) {
+                                if (window instanceof nameGUI) {
+                                    window.dispose();
+                                    break;
+                                }
+                            }
+                        });
+                    }
                     
                     // '/newTileList'로 시작하는 메시지인지 확인
                     if (msg.startsWith("/newTileList")) {

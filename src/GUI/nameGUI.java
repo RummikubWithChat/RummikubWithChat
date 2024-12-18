@@ -3,7 +3,15 @@ package GUI;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
+
+import model.game.GamePlaying;
 import network.JavaChatClientView;
 
 public class nameGUI extends JFrame {
@@ -11,6 +19,13 @@ public class nameGUI extends JFrame {
     private JTextField nameField;
     private JTextField ipField;
     private JTextField portField;
+
+    private Socket clientSocket;
+    private DataInputStream dis;
+    private DataOutputStream dos;
+
+    private PlayerGUI playerGUI;
+    private JButton readyButton;
 
     public nameGUI() {
         setTitle("Chat Client");
@@ -63,25 +78,17 @@ public class nameGUI extends JFrame {
         ipField.addActionListener(e -> startPlayAction());
         portField.addActionListener(e -> startPlayAction());
 
-        // PLAY 버튼
-        JButton startButton = new JButton("PLAY");
-        startButton.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        startButton.setBounds(325, 450, 150, 50);
-        startButton.addActionListener((ActionEvent e) -> {
-            String username = nameField.getText().trim();
-            String ip_addr = ipField.getText().trim();
-            String port_no = portField.getText().trim();
-
-            if (username.isEmpty() || ip_addr.isEmpty() || port_no.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "모든 필드를 입력하세요!", "입력 오류", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // JavaChatClientView로 전달
-            new PlayerGUI(username, ip_addr, port_no);
-            this.dispose(); // 현재 창 닫기
+        // READY 버튼
+        JButton readyButton = new JButton("READY");
+        readyButton.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        readyButton.setBounds(325, 450, 150, 50);
+        readyButton.addActionListener((ActionEvent e) -> {
+            // READY 버튼 텍스트를 WAIT...으로 변경
+            readyButton.setText("WAIT...");
+            //readyButton.setEnabled(false);
+            startPlayAction();
         });
-        add(startButton);
+        add(readyButton);
 
         // BACK 버튼
         JButton backButton = new JButton("BACK");
@@ -89,7 +96,7 @@ public class nameGUI extends JFrame {
         backButton.setBounds(20, 20, 100, 40);
         backButton.addActionListener((ActionEvent e) -> {
             // 이전 화면으로 돌아가는 로직 (startGUI를 예로 듦)
-            new startGUI().setVisible(true);
+            new startGUI().setVisible(false);
             this.dispose(); // 현재 창 닫기
         });
         add(backButton);
@@ -106,9 +113,10 @@ public class nameGUI extends JFrame {
             JOptionPane.showMessageDialog(this, "모든 필드를 입력하세요!", "입력 오류", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        new PlayerGUI(username, ip_addr, port_no);
-        this.dispose();
+        
+        // PlayerGUI 생성하고 숨기기
+        playerGUI = new PlayerGUI(username, ip_addr, port_no);
+        playerGUI.setVisible(false);
     }
 
 
