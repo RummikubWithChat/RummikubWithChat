@@ -5,14 +5,9 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 
 import javax.swing.*;
-import javax.swing.text.JTextComponent;
-
-import model.game.GamePlaying;
-import network.JavaChatClientView;
 
 public class nameGUI extends JFrame {
 
@@ -20,12 +15,7 @@ public class nameGUI extends JFrame {
     private JTextField ipField;
     private JTextField portField;
 
-    private Socket clientSocket;
-    private DataInputStream dis;
-    private DataOutputStream dos;
-
     private PlayerGUI playerGUI;
-    private JButton readyButton;
 
     public nameGUI() {
         setTitle("Chat Client");
