@@ -86,27 +86,36 @@ public class Board {
         previousTileList.addAll(onBoardTileList);
     }
 
+    // 각 플레이어의 임시 배열
     public void generateTemporaryTileList(Player player) {
-        int result = 0;
-        while (true) {
-            tileManage.tileListPrint(player.tileList, player);
-            System.out.print("\n\n현재 임시 배열 : ");
-            tileManage.tileLinkPrint(temporaryTile);
-            result = tileIndexPick(player);
-            if (result == -1) break;
+    	int result = 0;
+    	while (true) {
+    	    tileManage.tileListPrint(player.tileList, player);
+    	    System.out.print("\n\n현재 임시 배열 : ");
+    	    tileManage.tileLinkPrint(temporaryTile);
+    	    
+    	    try {
+    	        result = tileIndexPick(player); // result를 메서드 호출로 받음
+    	        if (result == -1) break;
 
-            if (result < -1 || result >= player.tileList.size()) {
-                System.out.println("잘못된 값을 입력하였습니다. 다시 입력하세요");
-            } else {
-                temporaryTile.add(player.tileList.get(result));
-                player.tileList.remove(result);
-            }
-        }
+    	        if (result < -1 || result >= player.tileList.size()) {
+    	            System.out.println("잘못된 값을 입력하였습니다. 다시 입력하세요.");
+    	        } else {
+    	            temporaryTile.add(player.tileList.get(result));
+    	            player.tileList.remove(result);
+    	        }
+    	    } catch (NumberFormatException e) {
+    	        System.out.println("숫자를 입력해야 합니다. 다시 입력하세요.");
+    	    }
+    	}
+
 
         boolean isTemporaryComplete = generateTempCheck(player);
         if (isTemporaryComplete) {
             turnCheckCompleteTileList.add(temporaryTile);
             onBoardTileList.add(temporaryTile);
+            
+            
         } else {
             player.tileList.addAll(temporaryTile);
         }
@@ -269,5 +278,10 @@ public class Board {
 
     public int getOnBoardTileListSize() {
         return onBoardTileList.size();
+    }
+    
+    // ArrayList<LinkedList<Tile>>를 문자열로 변환하는 메서드
+    public String previousTileListToString() {
+    	return previousTileList.toString();
     }
 }

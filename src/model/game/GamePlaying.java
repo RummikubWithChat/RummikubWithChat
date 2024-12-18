@@ -37,6 +37,8 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
         String playChoice = "1";
         Player currentPlayer = getCurrentPlayer();
 
+        JavaChatServer.sendBoardTileListToClient();
+        
         do {
         	System.out.println("현재 턴: " + playerTurn);
             tileListManage.tileLinkListPrint(onBoardTileList); //보드 타일 출력 
@@ -88,7 +90,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
         }
     }
     
-    private Player getCurrentPlayer() {
+    public Player getCurrentPlayer() {
         return switch (playerTurn) {
             case 1 -> player1;
             case 2 -> player2;
@@ -160,8 +162,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
                 System.out.println("] 카드가 추가되었습니다.");
             }
 
-            JavaChatServer.sendTileListToClient(player);
-            
+            JavaChatServer.sendTileListToClient(player);            
             return true;
         }
 
@@ -189,7 +190,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
                     boardManage.editOnBoardTileList(player);
                 }
             }
-
+            
             return false;
         } else if (Objects.equals(playChoice, "e") || Objects.equals(playChoice, "E")) {
             return true; //턴 종료 

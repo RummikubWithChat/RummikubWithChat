@@ -20,6 +20,9 @@ import javax.swing.border.LineBorder;
 
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.swing.Timer;
 
 import model.tile.*;
@@ -39,7 +42,8 @@ public class PlayerGUI extends JFrame {
     private int[] otherPlayersTime = {30, 30, 30};
 
     private List<Tile> tileList = new ArrayList<>();
-    private List<Tile> boardTileList = new ArrayList<>();  // 보드 패널에 있는 타일 리스트
+//    private List<Tile> boardTileList = new ArrayList<>();  // 보드 패널에 있는 타일 리스트
+    private ArrayList<LinkedList<Tile>> boardLinkedTileList = new ArrayList<>();
     
     private Map<TileColor, Map<Integer, Integer>> tileCounts = new EnumMap<>(TileColor.class);
     
@@ -88,6 +92,7 @@ public class PlayerGUI extends JFrame {
         contentPane.add(otherPlayersPanel, BorderLayout.WEST);
 
         // 보드 패널 설정 (드래그 앤 드롭 가능)
+     // 보드 패널 설정 (드래그 앤 드롭 가능)
         boardPanel = new JPanel();
         boardPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
         boardPanel.setBackground(new Color(25, 25, 100));
@@ -98,28 +103,39 @@ public class PlayerGUI extends JFrame {
                 try {
                     Transferable transferable = dtde.getTransferable();
                     Tile droppedTile = (Tile) transferable.getTransferData(TileTransferable.TILE_FLAVOR);
-                    
-                    // 보드 타일 리스트에 이미 있는 타일인지 확인
-                    if (boardTileList.contains(droppedTile)) {
-                        // 보드 타일 리스트에서 해당 타일의 현재 인덱스 찾기
-                        int currentIndex = boardTileList.indexOf(droppedTile);
-                        
-                        // 타일을 리스트의 마지막으로 이동
-                        boardTileList.remove(currentIndex);
-                        boardTileList.add(droppedTile);
+
+                    boolean isTileAlreadyInBoard = false;
+                    LinkedList<Tile> targetGroup = null;
+
+                    // 보드 타일 리스트를 순회하여 타일이 이미 있는지 확인
+                    for (LinkedList<Tile> group : boardLinkedTileList) {
+                        if (group.contains(droppedTile)) {
+                            isTileAlreadyInBoard = true;
+                            targetGroup = group;
+                            break;
+                        }
+                    }
+
+                    if (isTileAlreadyInBoard && targetGroup != null) {
+                        // 보드 그룹 내에서 타일의 현재 위치를 찾아 마지막으로 이동
+                        targetGroup.remove(droppedTile);
+                        targetGroup.addLast(droppedTile);
                     } else {
                         // 타일 패널에서 보드 패널로 처음 드래그되는 경우
-                        // 기존 코드 유지 (타일 리스트에서 제거하고 보드 타일 리스트에 추가)
+                        // 새로운 그룹을 만들어 추가
                         tileList.remove(droppedTile);
-                        boardTileList.add(droppedTile);
+
+                        LinkedList<Tile> newGroup = new LinkedList<>();
+                        newGroup.add(droppedTile);
+                        boardLinkedTileList.add(newGroup);
                     }
-                    
+
                     // 보드 패널 업데이트
-                    updateBoardPanel();
-                    
+                    updateBoardPanel(boardLinkedTileList);
+
                     // 타일 패널 업데이트
                     updateTilePanel();
-                    
+
                     dtde.acceptDrop(DnDConstants.ACTION_MOVE);
                     dtde.dropComplete(true);
                 } catch (Exception e) {
@@ -128,6 +144,7 @@ public class PlayerGUI extends JFrame {
                 }
             }
         });
+
         
         // 화면 가로, 세로 크기 구하기
         int screenWidth = getWidth();  // 화면의 가로 길이
@@ -280,17 +297,6 @@ public class PlayerGUI extends JFrame {
         tilePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
         tilePanel.setPreferredSize(new Dimension(750, 400));
 
-        // 초기 타일 랜덤 생성
-//        for (int i = 0; i < 14; i++) {
-//            TileColor randomColor = getRandomColor();
-//            int randomNumber = new Random().nextInt(13) + 1;
-//            Tile tile = new Tile(randomNumber, randomColor);
-//            tileList.add(tile);
-//
-//            JLabel tileLabel = createTileLabel(tile);
-//            tilePanel.add(tileLabel);
-//        }
-
         // 스크롤 패널 설정
         JScrollPane scrollPane = new JScrollPane(tilePanel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -416,12 +422,18 @@ public class PlayerGUI extends JFrame {
                         // 타일 리스트 메시지 처리
                         List<Tile> newTileList = parseTileListFromMessage(msg);
                         updateTilePanel(newTileList);  // 타일 패널 업데이트
+                    } else if (msg.startsWith("/newBoardTileList")) {
+                        // 타일 리스트 메시지 처리
+                    	List<LinkedList<Tile>> newBoardTileList = parseLinkedTileListFromMessage(msg);
+                    	updateBoardPanel(newBoardTileList);
+//                    	List<Tile> newBoardTileList = parseLinkedTileListFromMessage(msg);
+//                    	updateBoardPanel(newBoardTileList);
+                        System.out.println("msg: " + msg);  // 디버깅: 배열 출력
+                        System.out.println("tileArray: " + newBoardTileList.toString());  // 디버깅: 배열 출력
                     } else {
                         // 다른 메시지는 화면에 표시
                         AppendText(msg);
                     }
-                    
-                    //AppendText(msg);
                 } catch (IOException e) {
                     AppendText("dis.read() error");
                     try {
@@ -467,7 +479,62 @@ public class PlayerGUI extends JFrame {
         return newTileList;
     }
 
-    
+    private List<LinkedList<Tile>> parseLinkedTileListFromMessage(String message) {
+        System.out.println("Received message: " + message);
+
+        if (!message.startsWith("/newBoardTileList ")) {
+            System.err.println("Invalid message format: " + message);
+            return Collections.emptyList();
+        }
+
+        List<LinkedList<Tile>> boardTileList = new ArrayList<>();
+        String tileListString = message.substring(18).trim();
+        System.out.println("Original tileListString: " + tileListString);
+
+        try {
+            // 바깥 대괄호 제거
+            tileListString = tileListString.substring(1, tileListString.length() - 1).trim();
+
+            // 정규식을 사용해 가장 바깥 레벨의 그룹을 분리
+            Pattern groupPattern = Pattern.compile("\\[\\[(.*?)\\]\\]");
+            Matcher matcher = groupPattern.matcher(tileListString);
+
+            while (matcher.find()) {
+                String groupString = matcher.group(1); // 그룹 내부의 문자열 추출
+                System.out.println("Extracted groupString: " + groupString);
+
+                LinkedList<Tile> groupTiles = new LinkedList<>();
+
+                // 그룹 내부 타일 분리
+                String[] tileStrings = groupString.split("\\],\\s*\\[");
+                for (String tileStr : tileStrings) {
+                    tileStr = tileStr.replaceAll("\\[|\\]", "").trim();
+                    String[] parts = tileStr.split(",\\s*");
+
+                    if (parts.length >= 2) {
+                        int number = Integer.parseInt(parts[0].trim());
+                        TileColor color = TileColor.valueOf(parts[1].trim().toUpperCase());
+                        groupTiles.add(new Tile(number, color));
+                    }
+                }
+
+                if (!groupTiles.isEmpty()) {
+                    boardTileList.add(groupTiles);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing tile list: " + e.getMessage());
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+
+        System.out.println("Parsed board tile list: " + boardTileList);
+        return boardTileList;
+    }
+
+
+
+
     // Server에게 network으로 전송
     public void SendMessage(String msg) {
         try {
@@ -531,20 +598,21 @@ public class PlayerGUI extends JFrame {
         tilePanel.repaint();
     }
     
-    // 보드 패널을 갱신하는 메서드
-    private void updateBoardPanel() {
-        boardPanel.removeAll();  // 기존의 모든 타일 제거
-        
-        // boardTileList에 있는 모든 타일을 보드 패널에 추가
-        for (Tile tile : boardTileList) {
-            JLabel tileLabel = createTileLabel(tile);  // 타일에 해당하는 레이블 생성
-            boardPanel.add(tileLabel);  // 보드 패널에 레이블 추가
-        }
-        
-        // 보드 패널 갱신 (revalidate 및 repaint 호출)
-        boardPanel.revalidate();
-        boardPanel.repaint();
-    }
+//    // 보드 패널을 갱신하는 메서드
+//    private void updateBoardPanel() {
+//        boardPanel.removeAll();  // 기존의 모든 타일 제거
+//        
+//        // boardTileList에 있는 모든 타일을 보드 패널에 추가
+//        for (Tile tile : boardTileList) {
+//            JLabel tileLabel = createTileLabel(tile);  // 타일에 해당하는 레이블 생성
+//            boardPanel.add(tileLabel);  // 보드 패널에 레이블 추가
+//        }
+//        
+//        // 보드 패널 갱신 (revalidate 및 repaint 호출)
+//        boardPanel.revalidate();
+//        boardPanel.repaint();
+//    }
+
 
     private TileColor getRandomColor() {
         TileColor[] colors = TileColor.values();
@@ -602,7 +670,7 @@ public class PlayerGUI extends JFrame {
     }
 
     // 보드 패널 TransferHandler
-    private static class BoardPanelTransferHandler extends TransferHandler {
+    private class BoardPanelTransferHandler extends TransferHandler {
         @Override
         public boolean canImport(TransferSupport support) {
             return support.isDataFlavorSupported(TileTransferable.TILE_FLAVOR);
@@ -610,7 +678,27 @@ public class PlayerGUI extends JFrame {
 
         @Override
         public boolean importData(TransferSupport support) {
-            return true;
+            try {
+                Transferable transferable = support.getTransferable();
+                Tile droppedTile = (Tile) transferable.getTransferData(TileTransferable.TILE_FLAVOR);
+                
+                // 타일 패널에서 해당 타일 제거
+                tileList.remove(droppedTile);
+                
+                // 새로운 그룹 생성
+                LinkedList<Tile> newGroup = new LinkedList<>();
+                newGroup.add(droppedTile);
+                boardLinkedTileList.add(newGroup);
+                
+                // 패널 업데이트
+                updateTilePanel();
+                updateBoardPanel(boardLinkedTileList);
+                
+                return true;
+            } catch (UnsupportedFlavorException | IOException e) {
+                e.printStackTrace();
+                return false;
+            }
         }
     }
     
@@ -633,5 +721,39 @@ public class PlayerGUI extends JFrame {
         tileList.clear();
         tileList.addAll(newTileList);
     }
+    
+    public void updateBoardPanel(List<LinkedList<Tile>> newBoardTileList) {
+        boardPanel.removeAll(); // 기존 UI 삭제
+
+        boardLinkedTileList.clear();
+        boardLinkedTileList.addAll(newBoardTileList);
+
+        System.out.println("boardLinkedTileList: " + boardLinkedTileList);
+
+        for (LinkedList<Tile> group : boardLinkedTileList) {
+            System.out.println("group: " + group);
+
+            for (Tile tile : group) {
+                System.out.println("tile: " + tile);
+                JLabel tileLabel = createTileLabel(tile);
+                if (tileLabel != null) {
+                    boardPanel.add(tileLabel);
+                } else {
+                    System.out.println("Warning: Null tile label for tile: " + tile);
+                }
+            }
+
+            // 그룹 간격 추가 (디자인에 따라 조정)
+            JLabel spacerLabel = new JLabel("      "); // 간격 증가
+            boardPanel.add(spacerLabel);
+        }
+
+        // 보드 패널 컴포넌트 확인
+        System.out.println("boardPanel component count: " + boardPanel.getComponentCount());
+
+        boardPanel.revalidate(); // 레이아웃 갱신
+        boardPanel.repaint();    // UI 새로고침
+    }
+
 
 }
