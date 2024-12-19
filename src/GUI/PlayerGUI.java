@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import javax.swing.Timer;
 
 import model.game.GamePlaying;
+import model.player.Player;
 import model.tile.*;
 import network.JavaChatServer.UserService;
 
@@ -38,7 +39,8 @@ public class PlayerGUI extends JFrame {
     private Timer timer;
     private int remainingTime = 30;
 
-    private String[] otherPlayers = {"Player2", "Player3", "Player4"};
+    private List<Player> otherPlayers; // 다른 플레이어 리스트
+    //private String[] otherPlayers = {"Player2", "Player3", "Player4"};
     private int[] otherPlayersTime = {30, 30, 30};
 
     private List<Tile> tileList = new ArrayList<>();
@@ -82,12 +84,12 @@ public class PlayerGUI extends JFrame {
         otherPlayersPanel.setOpaque(false);
         otherPlayersPanel.setBorder(new EmptyBorder(10, 20, 30, 20));
 
-        for (int i = 0; i < otherPlayers.length; i++) {
-            JLabel playerLabel = new JLabel(otherPlayers[i] + ": " + otherPlayersTime[i] + "초");
-            playerLabel.setForeground(Color.WHITE);
-            playerLabel.setFont(new Font("Arial", Font.BOLD, 15));
-            otherPlayersPanel.add(playerLabel);
-        }
+        // for (int i = 0; i < otherPlayers.length; i++) {
+        //     JLabel playerLabel = new JLabel(otherPlayers[i] + ": " + otherPlayersTime[i] + "초");
+        //     playerLabel.setForeground(Color.WHITE);
+        //     playerLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        //     otherPlayersPanel.add(playerLabel);
+        // }
 
         contentPane.add(otherPlayersPanel, BorderLayout.WEST);
 
@@ -431,10 +433,10 @@ public class PlayerGUI extends JFrame {
                     // Use readUTF to read messages
                     String msg = dis.readUTF();
 
-                    if (msg.equals("/yourTurn")){
+                    if (msg.equals("/yourTurn\n")){
                         submitButton.setEnabled(true);
                         endButton.setEnabled(true);
-                    } else if (msg.equals("/otherTurn")){
+                    } else if (msg.equals("/otherTurn\n")){
                 		submitButton.setEnabled(false);
                         endButton.setEnabled(false);
                     }
@@ -814,6 +816,20 @@ public class PlayerGUI extends JFrame {
 
         boardPanel.revalidate(); // 레이아웃 갱신
         boardPanel.repaint();    // UI 새로고침
+    }
+
+    // 다른 플레이어 리스트를 업데이트하는 메서드
+    public void updateOtherPlayersList(List<Player> otherPlayers) {
+        this.otherPlayers = otherPlayers;
+        // GUI 업데이트 로직 (예: 플레이어 정보 갱신)
+        refreshPlayerList();
+    }
+
+    // 플레이어 리스트를 화면에 표시하는 메서드 (예시)
+    public void refreshPlayerList() {
+        for (Player player : otherPlayers) {
+            System.out.println("다른 플레이어: " + player.getName());
+        }
     }
 
 

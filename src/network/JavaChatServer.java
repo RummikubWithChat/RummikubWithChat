@@ -235,10 +235,10 @@ public class JavaChatServer extends JFrame {
 
             if (player.equals(currentPlayer)) {
                 // 현재 턴인 플레이어가 수행할 행동
-                userService.WriteOne("/yourTurn");
+                userService.WriteOne("/yourTurn\n");
             } else {
                 // 현재 턴이 아닌 다른 플레이어들이 수행할 행동
-                userService.WriteOne("/otherTurn");
+                userService.WriteOne("/otherTurn\n");
             }
         }
     }

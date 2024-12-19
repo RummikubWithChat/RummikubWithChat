@@ -5,7 +5,7 @@ import model.player.Player;
 import model.tile.Tile;
 import model.tile.TileList;
 import network.JavaChatServer;
-
+import GUI.PlayerGUI;
 import java.util.*;
 
 import static model.board.Board.onBoardTileList;
@@ -14,6 +14,7 @@ import static model.game.GameInitAndEndSet.gameEnd;
 import static model.game.GameInitAndEndSet.gameEndCheck;
 import static model.game.PlayChoice.*;
 import static model.tile.TileList.noPickTileList;
+
 
 public record GamePlaying(Board boardManage, TileList tileListManage,
                           Player player1, Player player2, Player player3, Player player4) {
@@ -38,7 +39,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
         Player currentPlayer = getCurrentPlayer();
 
         // 나를 제외한 다른 플레이어 리스트 얻기
-        // List<Player> otherPlayers = getOtherPlayers(currentPlayer);
+        List<Player> otherPlayers = getOtherPlayers(currentPlayer);
 
         JavaChatServer.sendBoardTileListToClient();
         
@@ -100,6 +101,13 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
         allPlayers.remove(currentPlayer); // currentPlayer를 제외
         return allPlayers;
     }
+
+    // public void updatePlayerGUI(Player currentPlayer) {
+    //     List<Player> otherPlayers = getOtherPlayers(currentPlayer);
+    //     // playerGUI 클래스에 다른 플레이어 리스트를 전달
+    //     playerGUI.updateOtherPlayersList(otherPlayers);
+    // }
+    
     
     public Player getCurrentPlayer() {
         return switch (playerTurn) {
