@@ -13,7 +13,9 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.awt.dnd.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 import java.util.*;
 import java.util.List;
@@ -602,7 +604,7 @@ public class PlayerGUI extends JFrame {
 
         int originalWidth = tileIcon.getIconWidth();
         int originalHeight = tileIcon.getIconHeight();
-        int targetWidth = 60;
+        int targetWidth = 50;
         int targetHeight = (originalHeight * targetWidth) / originalWidth;
 
         Image resizedImage = image.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
@@ -611,17 +613,69 @@ public class PlayerGUI extends JFrame {
         JLabel tileLabel = new JLabel(tileIcon);
         
         // 드래그 기능 추가
-        tileLabel.setTransferHandler(new TileLabelTransferHandler(tile));
-        tileLabel.addMouseMotionListener(new MouseAdapter() {
+        // tileLabel.setTransferHandler(new TileLabelTransferHandler(tile));
+        // tileLabel.addMouseMotionListener(new MouseAdapter() {
+        //     @Override
+        //     public void mouseDragged(MouseEvent e) {
+        //         JLabel label = (JLabel) e.getSource();
+        //         TransferHandler handler = label.getTransferHandler();
+        //         handler.exportAsDrag(label, e, TransferHandler.MOVE);
+        //     }
+        // });
+
+        // 기본 테두리 색 설정 (처음에는 투명한 테두리)
+        final Color defaultBorderColor = new Color(222, 184, 135); // 원래 테두리 색 (라이트 브라운 계열)
+        tileLabel.setBorder(new RoundedBorder(20, defaultBorderColor, 2)); // 초기에는 테두리가 보이지 않도록 설정
+
+        // 클릭 기능 추가
+        tileLabel.addMouseListener(new MouseAdapter() {
+            private boolean isSelected = false; // 선택 여부
+
             @Override
-            public void mouseDragged(MouseEvent e) {
-                JLabel label = (JLabel) e.getSource();
-                TransferHandler handler = label.getTransferHandler();
-                handler.exportAsDrag(label, e, TransferHandler.MOVE);
+            public void mouseClicked(MouseEvent e) {
+                if (isSelected) {
+                    // 선택 해제 시 기본 테두리 색으로 돌아가게
+                    tileLabel.setBorder(new RoundedBorder(20, defaultBorderColor, 2)); // 기본 테두리 색으로 설정
+                } else {
+                    // 선택 시 노란색 테두리로 변경
+                    tileLabel.setBorder(new RoundedBorder(20, Color.YELLOW, 2)); // 선택된 상태로 노란색 테두리 추가
+                }
+                isSelected = !isSelected; // 상태 토글
             }
         });
 
         return tileLabel;
+}
+
+    // 커스텀 둥근 테두리 Border 클래스
+    class RoundedBorder implements Border {
+        private int radius;
+        private Color color;
+        private int thickness;
+
+        public RoundedBorder(int radius, Color color, int thickness) {
+            this.radius = radius;
+            this.color = color;
+            this.thickness = thickness;
+        }
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color); // 테두리 색상
+            g2.setStroke(new BasicStroke(thickness)); // 테두리 두께
+            g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius); // 둥근 사각형
+        }
+
+        @Override
+    public Insets getBorderInsets(Component c) {
+        return new Insets(thickness + 0, thickness + 0, thickness + 0, thickness + 0); // 테두리 여백을 더 적게 설정
+    }
+        @Override
+        public boolean isBorderOpaque() {
+            return false; // 투명한 테두리
+        }
     }
 
     private void updateTilePanel() {
