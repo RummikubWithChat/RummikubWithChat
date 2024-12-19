@@ -15,7 +15,6 @@ import java.awt.dnd.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
 import java.util.*;
 import java.util.List;
@@ -100,7 +99,7 @@ public class PlayerGUI extends JFrame {
 
         contentPane.add(otherPlayersPanel, BorderLayout.WEST);
 
-     // 보드 패널 설정 (드래그 앤 드롭 가능)
+        // 보드 패널 설정 (드래그 앤 드롭 가능)
         boardPanel = new JPanel();
         boardPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
         boardPanel.setBackground(new Color(25, 25, 100));
