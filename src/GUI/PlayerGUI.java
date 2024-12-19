@@ -42,7 +42,7 @@ public class PlayerGUI extends JFrame {
     private int[] otherPlayersTime = {30, 30, 30};
 
     private List<Tile> tileList = new ArrayList<>();
-//    private List<Tile> boardTileList = new ArrayList<>();  // 보드 패널에 있는 타일 리스트
+
     private ArrayList<LinkedList<Tile>> boardLinkedTileList = new ArrayList<>();
     
     private Map<TileColor, Map<Integer, Integer>> tileCounts = new EnumMap<>(TileColor.class);
@@ -91,7 +91,6 @@ public class PlayerGUI extends JFrame {
 
         contentPane.add(otherPlayersPanel, BorderLayout.WEST);
 
-        // 보드 패널 설정 (드래그 앤 드롭 가능)
      // 보드 패널 설정 (드래그 앤 드롭 가능)
         boardPanel = new JPanel();
         boardPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
@@ -570,9 +569,6 @@ public class PlayerGUI extends JFrame {
         return boardTileList;
     }
 
-
-
-
     // Server에게 network으로 전송
     public void SendMessage(String msg) {
         try {
@@ -611,17 +607,6 @@ public class PlayerGUI extends JFrame {
         tileIcon = new ImageIcon(resizedImage);
 
         JLabel tileLabel = new JLabel(tileIcon);
-        
-        // 드래그 기능 추가
-        // tileLabel.setTransferHandler(new TileLabelTransferHandler(tile));
-        // tileLabel.addMouseMotionListener(new MouseAdapter() {
-        //     @Override
-        //     public void mouseDragged(MouseEvent e) {
-        //         JLabel label = (JLabel) e.getSource();
-        //         TransferHandler handler = label.getTransferHandler();
-        //         handler.exportAsDrag(label, e, TransferHandler.MOVE);
-        //     }
-        // });
 
         // 기본 테두리 색 설정 (처음에는 투명한 테두리)
         final Color defaultBorderColor = new Color(222, 184, 135); // 원래 테두리 색 (라이트 브라운 계열)
@@ -639,6 +624,14 @@ public class PlayerGUI extends JFrame {
                 } else {
                     // 선택 시 노란색 테두리로 변경
                     tileLabel.setBorder(new RoundedBorder(20, Color.YELLOW, 2)); // 선택된 상태로 노란색 테두리 추가
+
+                    // tileList에서 해당 타일의 인덱스 찾기
+                    int tileIndex = tileList.indexOf(tile);
+                    
+                    // 서버로 타일 인덱스 전송
+                    if (tileIndex != -1) {
+                        SendMessage(Integer.toString(tileIndex));
+                    }
                 }
                 isSelected = !isSelected; // 상태 토글
             }
@@ -686,28 +679,6 @@ public class PlayerGUI extends JFrame {
         }
         tilePanel.revalidate();
         tilePanel.repaint();
-    }
-    
-//    // 보드 패널을 갱신하는 메서드
-//    private void updateBoardPanel() {
-//        boardPanel.removeAll();  // 기존의 모든 타일 제거
-//        
-//        // boardTileList에 있는 모든 타일을 보드 패널에 추가
-//        for (Tile tile : boardTileList) {
-//            JLabel tileLabel = createTileLabel(tile);  // 타일에 해당하는 레이블 생성
-//            boardPanel.add(tileLabel);  // 보드 패널에 레이블 추가
-//        }
-//        
-//        // 보드 패널 갱신 (revalidate 및 repaint 호출)
-//        boardPanel.revalidate();
-//        boardPanel.repaint();
-//    }
-
-
-    private TileColor getRandomColor() {
-        TileColor[] colors = TileColor.values();
-        Random rand = new Random();
-        return colors[rand.nextInt(colors.length)];
     }
 
     // 타일 TransferHandler
