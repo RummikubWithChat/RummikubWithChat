@@ -41,7 +41,14 @@ public class PlayerGUI extends JFrame {
 
     private List<Tile> tileList = new ArrayList<>();
 //    private List<Tile> boardTileList = new ArrayList<>();  // 보드 패널에 있는 타일 리스트
-    private ArrayList<LinkedList<Tile>> boardLinkedTileList = new ArrayList<>();
+//    private ArrayList<LinkedList<Tile>> boardLinkedTileList = new ArrayList<>();
+    
+    private ArrayList<LinkedList<Tile>> onBoardTileList = new ArrayList<>(106);
+    private ArrayList<LinkedList<Tile>> turnCheckCompleteTileList = new ArrayList<>(106);
+    private ArrayList<LinkedList<Tile>> previousTileList = new ArrayList<>(106);
+    private ArrayList<LinkedList<Tile>> playerPutTileList = new ArrayList<>(106);
+
+    private LinkedList<Tile> temporaryTile = new LinkedList<Tile>();
     
     private Map<TileColor, Map<Integer, Integer>> tileCounts = new EnumMap<>(TileColor.class);
     
@@ -106,7 +113,7 @@ public class PlayerGUI extends JFrame {
                     LinkedList<Tile> targetGroup = null;
 
                     // 보드 타일 리스트를 순회하여 타일이 이미 있는지 확인
-                    for (LinkedList<Tile> group : boardLinkedTileList) {
+                    for (LinkedList<Tile> group : previousTileList) {
                         if (group.contains(droppedTile)) {
                             isTileAlreadyInBoard = true;
                             targetGroup = group;
@@ -125,11 +132,11 @@ public class PlayerGUI extends JFrame {
 
                         LinkedList<Tile> newGroup = new LinkedList<>();
                         newGroup.add(droppedTile);
-                        boardLinkedTileList.add(newGroup);
+                        previousTileList.add(newGroup);
                     }
 
                     // 보드 패널 업데이트
-                    updateBoardPanel(boardLinkedTileList);
+                    updateBoardPanel(previousTileList);
 
                     // 타일 패널 업데이트
                     updateTilePanel();
@@ -724,11 +731,11 @@ public class PlayerGUI extends JFrame {
                 // 새로운 그룹 생성
                 LinkedList<Tile> newGroup = new LinkedList<>();
                 newGroup.add(droppedTile);
-                boardLinkedTileList.add(newGroup);
+                previousTileList.add(newGroup);
                 
                 // 패널 업데이트
                 updateTilePanel();
-                updateBoardPanel(boardLinkedTileList);
+                updateBoardPanel(previousTileList);
                 
                 return true;
             } catch (UnsupportedFlavorException | IOException e) {
@@ -761,12 +768,12 @@ public class PlayerGUI extends JFrame {
     public void updateBoardPanel(List<LinkedList<Tile>> newBoardTileList) {
         boardPanel.removeAll(); // 기존 UI 삭제
 
-        boardLinkedTileList.clear();
-        boardLinkedTileList.addAll(newBoardTileList);
+        previousTileList.clear();
+        previousTileList.addAll(newBoardTileList);
 
-        System.out.println("boardLinkedTileList: " + boardLinkedTileList);
+        System.out.println("boardLinkedTileList: " + previousTileList);
 
-        for (LinkedList<Tile> group : boardLinkedTileList) {
+        for (LinkedList<Tile> group : previousTileList) {
             System.out.println("group: " + group);
 
             for (Tile tile : group) {
