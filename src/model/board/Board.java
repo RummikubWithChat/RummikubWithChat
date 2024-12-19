@@ -3,6 +3,7 @@ package model.board;
 import model.player.Player;
 import model.tile.Tile;
 import model.tile.TileList;
+import network.JavaChatServer;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -17,6 +18,9 @@ public class Board {
     public static ArrayList<LinkedList<Tile>> playerPutTileList = new ArrayList<>(106);
 
     public static LinkedList<Tile> temporaryTile = new LinkedList<Tile>();
+    
+    public static ArrayList<LinkedList<Tile>> temporaryTileList = new ArrayList<>(106);
+    
     private final TileList tileManage;
     private int onBoardTileSum = 0;
 
@@ -25,8 +29,15 @@ public class Board {
     }
 
     public void turnChanged(Player player) {
-        boolean isPlayerTurnSucceed = turnCheck(player);
+        // Skip turn check if player just ended turn without playing
+        if (turnCheckCompleteTileList.isEmpty()) {
+            // Only update previousTileList
+            previousTileList = new ArrayList<>(106);
+            previousTileList.addAll(onBoardTileList);
+            return;
+        }
 
+        boolean isPlayerTurnSucceed = turnCheck(player);
         if (isPlayerTurnSucceed) {
             turnIsSucceed();
         } else {
@@ -88,37 +99,52 @@ public class Board {
 
     // 각 플레이어의 임시 배열
     public void generateTemporaryTileList(Player player) {
-    	int result = 0;
-    	while (true) {
-    	    tileManage.tileListPrint(player.tileList, player);
-    	    System.out.print("\n\n현재 임시 배열 : ");
-    	    tileManage.tileLinkPrint(temporaryTile);
-    	    
-    	    try {
-    	        result = tileIndexPick(player); // result를 메서드 호출로 받음
-    	        if (result == -1) break;
+        int result = 0;
+        while (true) {
+            tileManage.tileListPrint(player.tileList, player);
+            System.out.print("\n\n현재 임시 배열 : ");
+            tileManage.tileLinkPrint(temporaryTile);
+                        
+            try {
+                result = tileIndexPick(player); // result를 메서드 호출로 받음
+                if (result == -1) break;
 
-    	        if (result < -1 || result >= player.tileList.size()) {
-    	            System.out.println("잘못된 값을 입력하였습니다. 다시 입력하세요.");
-    	        } else {
-    	            temporaryTile.add(player.tileList.get(result));
-    	            player.tileList.remove(result);
-    	        }
-    	    } catch (NumberFormatException e) {
-    	        System.out.println("숫자를 입력해야 합니다. 다시 입력하세요.");
-    	    }
-    	}
-
+                if (result < -1 || result >= player.tileList.size()) {
+                    System.out.println("잘못된 값을 입력하였습니다. 다시 입력하세요.");
+                } else {
+                    temporaryTile.add(player.tileList.get(result));
+                    player.tileList.remove(result);
+                    
+                    // 타일이 추가될 때마다 temporaryTileList 갱신
+                    temporaryTileList.clear();
+                    temporaryTileList.addAll(onBoardTileList);
+                    // temporaryTile이 비어있지 않은 경우에만 추가
+                    if (!temporaryTile.isEmpty()) {
+                        temporaryTileList.add(temporaryTile);
+                    }
+                    JavaChatServer.sendTemporaryTileListToClient();
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("숫자를 입력해야 합니다. 다시 입력하세요.");
+            }
+        }
 
         boolean isTemporaryComplete = generateTempCheck(player);
         if (isTemporaryComplete) {
             turnCheckCompleteTileList.add(temporaryTile);
             onBoardTileList.add(temporaryTile);
             
-            
+            // 최종 결과 갱신
+            temporaryTileList.clear();
+            temporaryTileList.addAll(onBoardTileList);
+            JavaChatServer.sendTemporaryTileListToClient();
         } else {
             player.tileList.addAll(temporaryTile);
-        }
+            // 실패 시 temporaryTileList에서 temporaryTile 제거
+            temporaryTileList.clear();
+            temporaryTileList.addAll(onBoardTileList);
+            JavaChatServer.sendTemporaryTileListToClient();
+        }        
         temporaryTile = new LinkedList<Tile>();
     }
 
@@ -283,5 +309,12 @@ public class Board {
     // ArrayList<LinkedList<Tile>>를 문자열로 변환하는 메서드
     public String previousTileListToString() {
     	return previousTileList.toString();
+    }
+    
+    public String onBoardTileListToString() {
+    	return onBoardTileList.toString();
+    }
+    public String temporaryTileListToString() {
+    	return temporaryTileList.toString();
     }
 }

@@ -224,7 +224,15 @@ public class JavaChatServer extends JFrame {
         // 모든 UserService에 대해 WriteAll을 호출
         for (UserService userService : UserVec) {
             // 타일 리스트를 직렬화하여 전송 (혹은 원하는 포맷으로)
-            userService.WriteOne("/newBoardTileList " + boardManage.previousTileListToString());  // 예시로 간단히 출력
+            userService.WriteOne("/newBoardTileList " + boardManage.onBoardTileListToString());  // 예시로 간단히 출력
+        }
+    }
+    
+    public static void sendTemporaryTileListToClient() {
+        // 모든 UserService에 대해 WriteAll을 호출
+        for (UserService userService : UserVec) {
+            // 타일 리스트를 직렬화하여 전송 (혹은 원하는 포맷으로)
+            userService.WriteOne("/newBoardTileList " + boardManage.temporaryTileListToString());  // 예시로 간단히 출력
         }
     }
     
