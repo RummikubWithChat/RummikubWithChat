@@ -152,6 +152,15 @@ public class TileList {
         StringBuilder sb = new StringBuilder();
         sb.append("\n-----------------\n").append(player.name).append(" TileList\n");
 
+        // 현재 플레이어 이름과 비교
+        // String currentPlayerName = player.name;
+
+        // if (player.name.equals(currentPlayerName)) {
+        //     sb.append("**현재 플레이어입니다.**\n");
+        // } else {
+        //     sb.append("현재 플레이어가 아닙니다.\n");
+        // }
+
         for (int i = 0; i < list.size(); i++) {
             TileColor color = list.get(i).color;
 

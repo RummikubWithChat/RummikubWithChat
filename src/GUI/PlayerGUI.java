@@ -19,7 +19,9 @@ import java.util.*;
 import java.util.List;
 import javax.swing.Timer;
 
+import model.game.GamePlaying;
 import model.tile.*;
+import network.JavaChatServer.UserService;
 
 public class PlayerGUI extends JFrame {
 	private String username;
@@ -276,17 +278,6 @@ public class PlayerGUI extends JFrame {
         tilePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
         tilePanel.setPreferredSize(new Dimension(750, 400));
 
-        // 초기 타일 랜덤 생성
-//        for (int i = 0; i < 14; i++) {
-//            TileColor randomColor = getRandomColor();
-//            int randomNumber = new Random().nextInt(13) + 1;
-//            Tile tile = new Tile(randomNumber, randomColor);
-//            tileList.add(tile);
-//
-//            JLabel tileLabel = createTileLabel(tile);
-//            tilePanel.add(tileLabel);
-//        }
-
         // 스크롤 패널 설정
         JScrollPane scrollPane = new JScrollPane(tilePanel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -326,7 +317,6 @@ public class PlayerGUI extends JFrame {
 		endButton = new JButton("End︎");
 		endButton.setPreferredSize(new Dimension(86, 50));
 		endButton.setFont(new Font("Gothic", Font.BOLD, 20));
-		//returnButton.setForeground(new Color(80, 255, 150));
 		endButton.setForeground(new Color(255, 127, 80));
         endButton.addActionListener(new ActionListener() {
             @Override
@@ -335,6 +325,7 @@ public class PlayerGUI extends JFrame {
                 SendMessage("e");
             }
         });
+        endButton.setEnabled(false);
 		
 		submitButton = new JButton("✓︎");
 		submitButton.setPreferredSize(new Dimension(86, 50));
@@ -348,6 +339,7 @@ public class PlayerGUI extends JFrame {
                 SendMessage("-1");
             }
         });
+        submitButton.setEnabled(false);
 		
 		
 		inputPanel.add(messageField, BorderLayout.CENTER);
@@ -420,6 +412,12 @@ public class PlayerGUI extends JFrame {
                 try {
                     // Use readUTF to read messages
                     String msg = dis.readUTF();
+
+                    if (msg.equals("/yourTurn")){
+                        submitButton.setEnabled(true);
+                        endButton.setEnabled(true);
+                        AppendText(msg); //메시지 수신 확인(나중에 삭제)
+                    }
 
                     if (msg.equals("Game Start!")) {
                         SwingUtilities.invokeLater(() -> {

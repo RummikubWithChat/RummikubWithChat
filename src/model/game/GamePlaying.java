@@ -37,8 +37,14 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
         String playChoice = "1";
         Player currentPlayer = getCurrentPlayer();
 
+        // 나를 제외한 다른 플레이어 리스트 얻기
+        // List<Player> otherPlayers = getOtherPlayers(currentPlayer);
+
         do {
         	System.out.println("현재 턴: " + playerTurn);
+            // for (Player player : otherPlayers) { //나를 제외한 다른 플레이어 이름 출력
+            //     System.out.println(player.getName());
+            // }
             tileListManage.tileLinkListPrint(onBoardTileList); //보드 타일 출력 
             if (playerTurn == 1) {
                 tileListManage.tileListPrint(player1.tileList, player1);
@@ -87,8 +93,15 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
             }
         }
     }
+
+    // 현재 플레이어를 제외한 다른 플레이어 리스트 반환
+    public List<Player> getOtherPlayers(Player currentPlayer) {
+        List<Player> allPlayers = new ArrayList<>(List.of(player1, player2, player3, player4));
+        allPlayers.remove(currentPlayer); // currentPlayer를 제외
+        return allPlayers;
+    }
     
-    private Player getCurrentPlayer() {
+    public Player getCurrentPlayer() {
         return switch (playerTurn) {
             case 1 -> player1;
             case 2 -> player2;
@@ -96,6 +109,10 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
             default -> player4;
         };
     }
+
+    // public int getCurrentPlayerTurn() {
+    //     return playerTurn;
+    // }
 
     //연속된 숫자의 타일인지 확인하는 메서드 
     private Boolean isConstantNumber(ArrayList<Tile> playerList, int i){

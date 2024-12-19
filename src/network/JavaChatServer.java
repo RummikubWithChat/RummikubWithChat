@@ -52,6 +52,8 @@ public class JavaChatServer extends JFrame {
     static TileList tileManage = new TileList();
     static Board boardManage = new Board(tileManage);
     static List<Player> players = new ArrayList<>();	
+
+    GamePlaying gamePlaying;
     
  // 플레이어와 UserService 간의 맵
     static Map<Player, UserService> playerToUserServiceMap = new HashMap<>();
@@ -158,13 +160,15 @@ public class JavaChatServer extends JFrame {
             
             // 각 플레이어에게 게임 시작 메시지 전송
             sendToClient(player, "Game Start!");
+            // 각 클라이언트에 게임 시작 메시지 명시적으로 전송
+            //userService.WriteOne("Game Start!");
         }
 
         // 게임 초기화
         gameInitSetting(tileManage, players);
 
         // 게임 진행
-        GamePlaying gamePlaying = new GamePlaying(boardManage, tileManage, players.get(0), players.get(1), players.get(2), players.get(3));
+        gamePlaying = new GamePlaying(boardManage, tileManage, players.get(0), players.get(1), players.get(2), players.get(3));
         gamePlaying.gamePlay();
     }
     
@@ -219,7 +223,7 @@ public class JavaChatServer extends JFrame {
     
     // User 당 생성되는 Thread, 유저의 수만큼 스레스 생성
     // Read One 에서 대기 -> Write All
-    class UserService extends Thread {
+    public class UserService extends Thread {
         private InputStream is;
         private OutputStream os;
         private DataInputStream dis;
@@ -248,6 +252,16 @@ public class JavaChatServer extends JFrame {
             } catch (Exception e) {
                 AppendText("userService error");
             }
+        }
+
+        // 자신의 turn 인지 확인 후 반환
+        public boolean isMyTurn() {
+        	if(getPlayerByUserService(this) == gamePlaying.getCurrentPlayer()) {
+        		return true;
+        	}
+        	else {
+        		return false;
+        	}
         }
         
         private final Object lock = new Object(); // 동기화를 위한 객체
