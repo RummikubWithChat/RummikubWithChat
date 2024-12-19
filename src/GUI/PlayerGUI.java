@@ -433,7 +433,9 @@ public class PlayerGUI extends JFrame {
                     if (msg.equals("/yourTurn")){
                         submitButton.setEnabled(true);
                         endButton.setEnabled(true);
-                        AppendText(msg); //메시지 수신 확인(나중에 삭제)
+                    } else if (msg.equals("/otherTurn")){
+                		submitButton.setEnabled(false);
+                        endButton.setEnabled(false);
                     }
 
                     if (msg.equals("Game Start!")) {

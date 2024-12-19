@@ -185,35 +185,43 @@ public class TileList {
     }
 
 
-    //색깔 기준으로 정렬 
+    // 색깔 기준으로 정렬 (조커는 항상 맨 뒤)
     public void tileSortToColor(ArrayList<Tile> tileList) {
         tileList.sort(new Comparator<Tile>() {
             @Override
             public int compare(Tile o1, Tile o2) {
-                // 먼저 색상을 기준으로 정렬 
+                // 조커는 무조건 맨 뒤로 이동
+                if (o1.number == 999) return 1;  // o1이 조커이면 뒤로
+                if (o2.number == 999) return -1; // o2가 조커이면 o1이 앞
+
+                // 색상 기준 정렬
                 int colorComparison = o1.color.compareTo(o2.color);
-                
-                // 색상이 같다면 숫자를 기준으로 정렬
                 if (colorComparison == 0) {
+                    // 색상이 같으면 숫자 기준 정렬
                     return o1.number - o2.number;
                 }
-                
                 return colorComparison;
             }
         });
-        System.out.println("색상 기준 정렬 완료");
+        System.out.println("색상 기준 정렬 완료 (조커는 맨 뒤)");
     }
 
-    // 숫자 기준으로 정렬 
+    // 숫자 기준으로 정렬 (조커는 항상 맨 뒤)
     public void tileSortToNumber(ArrayList<Tile> tileList) {
         tileList.sort(new Comparator<Tile>() {
             @Override
             public int compare(Tile o1, Tile o2) {
+                // 조커는 무조건 맨 뒤로 이동
+                if (o1.number == 999) return 1;  // o1이 조커이면 뒤로
+                if (o2.number == 999) return -1; // o2가 조커이면 o1이 앞
+
+                // 숫자 기준 정렬
                 return o1.number - o2.number;
             }
         });
-        System.out.println("정렬 완료");
+        System.out.println("숫자 기준 정렬 완료 (조커는 맨 뒤)");
     }
+
 
     public void tileShuffle(ArrayList<Tile> tileList) {
         for (int i = 0; i < 3; i++) {

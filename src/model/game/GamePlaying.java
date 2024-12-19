@@ -44,9 +44,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
         
         do {
         	System.out.println("현재 턴: " + playerTurn);
-            // for (Player player : otherPlayers) { //나를 제외한 다른 플레이어 이름 출력
-            //     System.out.println(player.getName());
-            // }
+        	JavaChatServer.sendIsTurnToClient(currentPlayer);
             tileListManage.tileLinkListPrint(onBoardTileList); //보드 타일 출력 
             if (playerTurn == 1) {
                 tileListManage.tileListPrint(player1.tileList, player1);

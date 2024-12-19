@@ -228,6 +228,21 @@ public class JavaChatServer extends JFrame {
         }
     }
     
+    public static void sendIsTurnToClient(Player currentPlayer) {
+        for (Map.Entry<Player, UserService> entry : playerToUserServiceMap.entrySet()) {
+            Player player = entry.getKey();
+            UserService userService = entry.getValue();
+
+            if (player.equals(currentPlayer)) {
+                // 현재 턴인 플레이어가 수행할 행동
+                userService.WriteOne("/yourTurn");
+            } else {
+                // 현재 턴이 아닌 다른 플레이어들이 수행할 행동
+                userService.WriteOne("/otherTurn");
+            }
+        }
+    }
+    
     // User 당 생성되는 Thread, 유저의 수만큼 스레스 생성
     // Read One 에서 대기 -> Write All
     public class UserService extends Thread {
