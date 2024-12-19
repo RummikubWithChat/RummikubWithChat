@@ -49,13 +49,12 @@ public class JavaChatServer extends JFrame {
     static private Vector<UserService> UserVec = new Vector<>(); // 연결된 사용자를 저장할 벡터, ArrayList와 같이 동적 배열을 만들어주는 컬렉션 객체이나 동기화로 인해 안전성 향상
     private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
 
+    GamePlaying gamePlaying;
     static TileList tileManage = new TileList();
     static Board boardManage = new Board(tileManage);
     static List<Player> players = new ArrayList<>();	
-
-    GamePlaying gamePlaying;
     
- // 플레이어와 UserService 간의 맵
+    // 플레이어와 UserService 간의 맵
     static Map<Player, UserService> playerToUserServiceMap = new HashMap<>();
     
     /**
@@ -221,6 +220,14 @@ public class JavaChatServer extends JFrame {
         }
     }
     
+    public static void sendBoardTileListToClient() {
+        // 모든 UserService에 대해 WriteAll을 호출
+        for (UserService userService : UserVec) {
+            // 타일 리스트를 직렬화하여 전송 (혹은 원하는 포맷으로)
+            userService.WriteOne("/newBoardTileList " + boardManage.previousTileListToString());  // 예시로 간단히 출력
+        }
+    }
+    
     // User 당 생성되는 Thread, 유저의 수만큼 스레스 생성
     // Read One 에서 대기 -> Write All
     public class UserService extends Thread {
@@ -295,7 +302,6 @@ public class JavaChatServer extends JFrame {
             }
         }
 
-
         // 클라이언트로 메시지 전송
         public void WriteOne(String msg) {
             try {
@@ -335,6 +341,7 @@ public class JavaChatServer extends JFrame {
             }
         }
         
+        // 해당 UserService에 맞는 Player 반환
         private Player getPlayerByUserService(UserService userService) {
             for (Map.Entry<Player, UserService> entry : playerToUserServiceMap.entrySet()) {
                 if (entry.getValue() == userService) {
@@ -343,7 +350,6 @@ public class JavaChatServer extends JFrame {
             }
             return null; // 일치하는 플레이어가 없으면 null 반환
         }
-
         
         // 타일을 색깔별로 정렬하여 클라이언트에게 전송
         private void handleTileSortToColor() {
@@ -388,7 +394,6 @@ public class JavaChatServer extends JFrame {
                 WriteOne("타일 정렬 중 오류가 발생했습니다.");
             }
         }
-        
         
         public void run() {
             while (true) {

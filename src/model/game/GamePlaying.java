@@ -40,6 +40,8 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
         // 나를 제외한 다른 플레이어 리스트 얻기
         // List<Player> otherPlayers = getOtherPlayers(currentPlayer);
 
+        JavaChatServer.sendBoardTileListToClient();
+        
         do {
         	System.out.println("현재 턴: " + playerTurn);
             // for (Player player : otherPlayers) { //나를 제외한 다른 플레이어 이름 출력
@@ -177,8 +179,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
                 System.out.println("] 카드가 추가되었습니다.");
             }
 
-            JavaChatServer.sendTileListToClient(player);
-            
+            JavaChatServer.sendTileListToClient(player);            
             return true;
         }
 
@@ -206,7 +207,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
                     boardManage.editOnBoardTileList(player);
                 }
             }
-
+            
             return false;
         } else if (Objects.equals(playChoice, "e") || Objects.equals(playChoice, "E")) {
             return true; //턴 종료 
