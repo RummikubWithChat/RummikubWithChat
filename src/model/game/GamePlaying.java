@@ -5,7 +5,6 @@ import model.player.Player;
 import model.tile.Tile;
 import model.tile.TileList;
 import network.JavaChatServer;
-import GUI.PlayerGUI;
 import java.util.*;
 
 import static model.board.Board.onBoardTileList;
@@ -38,77 +37,125 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
         String playChoice = "1";
         Player currentPlayer = getCurrentPlayer();
 
-        // 나를 제외한 다른 플레이어 리스트 얻기
-        List<Player> otherPlayers = getOtherPlayers(currentPlayer);
-
         JavaChatServer.sendBoardTileListToClient();
         
         do {
-        	System.out.println("현재 턴: " + playerTurn);
-        	JavaChatServer.sendIsTurnToClient(currentPlayer);
-            tileListManage.tileLinkListPrint(onBoardTileList); //보드 타일 출력 
-            if (playerTurn == 1) {
-                tileListManage.tileListPrint(player1.tileList, player1);
-                playChoice = pickOrShow(currentPlayer);
-                turnComplete = choiceCheck(playChoice);
-                
-            } else if (playerTurn == 2){
-                tileListManage.tileListPrint(player2.tileList, player2);
-                playChoice = pickOrShow(currentPlayer);
-                turnComplete = choiceCheck(playChoice);
-                
-            } else if (playerTurn == 3){
-                tileListManage.tileListPrint(player3.tileList, player3);
-                playChoice = pickOrShow(currentPlayer);
-                turnComplete = choiceCheck(playChoice);
-                
-            } else {
-                tileListManage.tileListPrint(player4.tileList, player4);
-                playChoice = pickOrShow(currentPlayer);
-                turnComplete = choiceCheck(playChoice);
-            }
+            System.out.println("현재 턴: " + playerTurn);
+            JavaChatServer.sendIsTurnToClient(currentPlayer);
+            tileListManage.tileLinkListPrint(onBoardTileList); // 보드 타일 출력 
+            tileListManage.tileListPrint(currentPlayer.tileList, currentPlayer);
+            
+            playChoice = pickOrShow(currentPlayer);
+            turnComplete = choiceCheck(playChoice);
         } while (!turnComplete);
 
         // 다음 턴으로 넘기기
         if ((Objects.equals(playChoice, "p")) || (Objects.equals(playChoice, "P"))) {
-            if (playerTurn == 1) 
-            	playerTurn = 2;
-            else if (playerTurn == 2)
-            	playerTurn = 3;
-            else if (playerTurn == 3)
-            	playerTurn = 4;
-            else playerTurn = 1;
+            advanceTurn();
         } else {
-            if (playerTurn == 1) {
-                boardManage.turnChanged(player1);
-                playerTurn = 2;
-            } else if(playerTurn == 2) {
-                boardManage.turnChanged(player2);
-                playerTurn = 3;
-            } else if(playerTurn == 3) {
-            	boardManage.turnChanged(player3);
-                playerTurn = 4;
-            } else {
-            	boardManage.turnChanged(player4);
-                playerTurn = 1;
-            }
+            boardManage.turnChanged(currentPlayer);
+            advanceTurn();
         }
     }
+    
+    private Boolean choiceCheck(String playChoice) {
+        ArrayList<Tile> playerList = null;
+        String playerName = null;
+        Player player;
 
-    // 현재 플레이어를 제외한 다른 플레이어 리스트 반환
-    public List<Player> getOtherPlayers(Player currentPlayer) {
-        List<Player> allPlayers = new ArrayList<>(List.of(player1, player2, player3, player4));
-        allPlayers.remove(currentPlayer); // currentPlayer를 제외
-        return allPlayers;
+        if (playerTurn == 1) {
+            playerList = player1.tileList;
+            playerName = player1.name;
+            player = player1;
+        } else if (playerTurn == 2) {
+            playerList = player2.tileList;
+            playerName = player2.name;
+            player = player2;
+        } else if (playerTurn == 3) {
+            playerList = player3.tileList;
+            playerName = player3.name;
+            player = player3;
+        } else {
+        	playerList = player4.tileList;
+            playerName = player4.name;
+            player = player4;
+        }
+
+        // 카드 가져오기 (p)
+        if (Objects.equals(playChoice, "p") || Objects.equals(playChoice, "P")) {
+        	handlePickAction(player);           
+            return true;
+        }
+
+        // 숫자 기준으로 정렬 (n)
+        else if (Objects.equals(playChoice, "n") || Objects.equals(playChoice, "N")) {
+            tileListManage.tileSortToNumber(playerList);
+            return false;
+        }
+        
+        // 색깔 기준으로 정렬 (c)
+        else if (Objects.equals(playChoice, "c") || Objects.equals(playChoice, "C")) {
+            tileListManage.tileSortToColor(playerList);
+            return false;
+        }
+
+        // 카드 내기 (s)
+        else if (Objects.equals(playChoice, "s") || Objects.equals(playChoice, "S")) {
+            if (!player.isRegisterCheck) {
+            	if(Objects.equals(playChoice, "p") || Objects.equals(playChoice, "P")) {
+            		handlePickAction(player);
+            		return true;
+            	}
+                boardManage.generateTemporaryTileList(player);
+            } else {
+                String choiceAddOrEdit = cardListAddOrEdit(player);
+                if (Objects.equals(choiceAddOrEdit, "a") || Objects.equals(choiceAddOrEdit, "A")) {
+                    boardManage.generateTemporaryTileList(player);
+                } else if (Objects.equals(choiceAddOrEdit, "e") || Objects.equals(choiceAddOrEdit, "E")) {
+                    boardManage.editOnBoardTileList(player);
+                } else if (Objects.equals(choiceAddOrEdit, "p") || Objects.equals(choiceAddOrEdit, "P")) {
+                	handlePickAction(player);
+            		return true;
+                }
+            }
+            
+            return false;
+        } else if (Objects.equals(playChoice, "e") || Objects.equals(playChoice, "E")) {
+            return true; //턴 종료 
+        } else {
+            System.out.println("잘못된 선택지입니다. 다시 입력하세요.");
+            pickOrShow(player);
+            return false;
+        }
     }
+    
+    // 타일 가져오기 액션 (P)
+    public void handlePickAction(Player currentPlayer) {
+        if (!tileListManage.isTileListNull(noPickTileList)) {
+            Tile tile = tileListManage.noPickTileDivide(currentPlayer.tileList);
+            System.out.print(currentPlayer.name + "에게 [");
+            tileListManage.tilePrint(tile);
+            System.out.println("] 카드가 추가되었습니다.");
+            
+            JavaChatServer.sendTileListToClient(currentPlayer);
+            JavaChatServer.sendTileListSizeToClient();
 
-    // public void updatePlayerGUI(Player currentPlayer) {
-    //     List<Player> otherPlayers = getOtherPlayers(currentPlayer);
-    //     // playerGUI 클래스에 다른 플레이어 리스트를 전달
-    //     playerGUI.updateOtherPlayersList(otherPlayers);
-    // }
+        }
+    }
     
-    
+    // 다음 턴으로 넘기는 함수
+    private void advanceTurn() {
+        if (playerTurn == 1) {
+            playerTurn = 2;
+        } else if (playerTurn == 2) {
+            playerTurn = 3;
+        } else if (playerTurn == 3) {
+            playerTurn = 4;
+        } else {
+            playerTurn = 1;
+        }
+    }
+        
     public Player getCurrentPlayer() {
         return switch (playerTurn) {
             case 1 -> player1;
@@ -117,10 +164,6 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
             default -> player4;
         };
     }
-
-    // public int getCurrentPlayerTurn() {
-    //     return playerTurn;
-    // }
 
     //연속된 숫자의 타일인지 확인하는 메서드 
     private Boolean isConstantNumber(ArrayList<Tile> playerList, int i){
@@ -150,77 +193,5 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
 
         onBoardTileList.add(temporaryTile); //보드 타일에 추가 
         temporaryTile = new LinkedList<Tile>(); //플레이어 타일 리스트에서 해당 타일 제거 
-    }
-
-    private Boolean choiceCheck(String playChoice) {
-        ArrayList<Tile> playerList = null;
-        String playerName = null;
-        Player player;
-
-        if (playerTurn == 1) {
-            playerList = player1.tileList;
-            playerName = player1.name;
-            player = player1;
-        } else if (playerTurn == 2) {
-            playerList = player2.tileList;
-            playerName = player2.name;
-            player = player2;
-        } else if (playerTurn == 3) {
-            playerList = player3.tileList;
-            playerName = player3.name;
-            player = player3;
-        } else {
-        	playerList = player4.tileList;
-            playerName = player4.name;
-            player = player4;
-        }
-
-        // 카드 가져오기 (p)
-        if (Objects.equals(playChoice, "p") || Objects.equals(playChoice, "P")) {
-            if (tileListManage.isTileListNull(noPickTileList)) {
-            } else {
-                Tile tile = tileListManage.noPickTileDivide(playerList);
-                System.out.print(playerName + "에게 [");
-                tileListManage.tilePrint(tile);
-                System.out.println("] 카드가 추가되었습니다.");
-            }
-
-            JavaChatServer.sendTileListToClient(player);            
-            return true;
-        }
-
-        // 숫자 기준으로 정렬 (n)
-        else if (Objects.equals(playChoice, "n") || Objects.equals(playChoice, "N")) {
-            tileListManage.tileSortToNumber(playerList);
-            return false;
-        }
-        
-        // 색깔 기준으로 정렬 (c)
-        else if (Objects.equals(playChoice, "c") || Objects.equals(playChoice, "C")) {
-            tileListManage.tileSortToColor(playerList);
-            return false;
-        }
-
-        // 카드 내기 (s)
-        else if (Objects.equals(playChoice, "s") || Objects.equals(playChoice, "S")) {
-            if (!player.isRegisterCheck) {
-                boardManage.generateTemporaryTileList(player);
-            } else {
-                String choiceAddOrEdit = cardListAddOrEdit(player);
-                if (Objects.equals(choiceAddOrEdit, "a") || Objects.equals(choiceAddOrEdit, "A")) {
-                    boardManage.generateTemporaryTileList(player);
-                } else if (Objects.equals(choiceAddOrEdit, "e") || Objects.equals(choiceAddOrEdit, "E")) {
-                    boardManage.editOnBoardTileList(player);
-                }
-            }
-            
-            return false;
-        } else if (Objects.equals(playChoice, "e") || Objects.equals(playChoice, "E")) {
-            return true; //턴 종료 
-        } else {
-            System.out.println("잘못된 선택지입니다. 다시 입력하세요.");
-            pickOrShow(player);
-            return false;
-        }
     }
 }

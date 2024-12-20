@@ -38,10 +38,17 @@ public class PlayerGUI extends JFrame {
     private JLabel timeLabel;
     private Timer timer;
     private int remainingTime = 30;
-
-    private List<Player> otherPlayers; // 다른 플레이어 리스트
-    //private String[] otherPlayers = {"Player2", "Player3", "Player4"};
+    
+    private JButton endButton;
+    private JButton submitButton;
+    private JButton addButton;
+    
+    // 다른 플레이어 관련 
+    private JPanel otherPlayersPanel = new JPanel();
+    private List<String> otherPlayersName = new ArrayList<>();
+    private List<String> otherPlayersTileCount = new ArrayList<>(Arrays.asList("14", "14", "14"));
     private int[] otherPlayersTime = {30, 30, 30};
+    private int turnIndex;
 
     private List<Tile> tileList = new ArrayList<>();
 //    private List<Tile> boardTileList = new ArrayList<>();  // 보드 패널에 있는 타일 리스트
@@ -60,11 +67,6 @@ public class PlayerGUI extends JFrame {
     private JTextArea chatArea;
     private JTextField messageField;
     private JButton sendButton;
-    private JButton endButton;
-    private JButton submitButton;
-    
-    private JLabel lblUserName;
-
         
     // network 관련 변수들
     private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
@@ -86,21 +88,13 @@ public class PlayerGUI extends JFrame {
         contentPane.setLayout(new BorderLayout());
 
         // 다른 플레이어 패널 설정
-        JPanel otherPlayersPanel = new JPanel();
         otherPlayersPanel.setLayout(new BoxLayout(otherPlayersPanel, BoxLayout.Y_AXIS));
         otherPlayersPanel.setOpaque(false);
         otherPlayersPanel.setBorder(new EmptyBorder(10, 20, 30, 20));
 
-        // for (int i = 0; i < otherPlayers.length; i++) {
-        //     JLabel playerLabel = new JLabel(otherPlayers[i] + ": " + otherPlayersTime[i] + "초");
-        //     playerLabel.setForeground(Color.WHITE);
-        //     playerLabel.setFont(new Font("Arial", Font.BOLD, 15));
-        //     otherPlayersPanel.add(playerLabel);
-        // }
-
         contentPane.add(otherPlayersPanel, BorderLayout.WEST);
 
-     // 보드 패널 설정 (드래그 앤 드롭 가능)
+        // 보드 패널 설정 (드래그 앤 드롭 가능)
         boardPanel = new JPanel();
         boardPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
         boardPanel.setBackground(new Color(25, 25, 100));
@@ -277,7 +271,7 @@ public class PlayerGUI extends JFrame {
         });
         buttonPanel.add(btn789);
         
-        JButton addButton = new JButton("+");
+        addButton = new JButton("+");
         addButton.setPreferredSize(new Dimension(100, 75));
         addButton.setMaximumSize(new Dimension(100, 75));
         addButton.setForeground(Color.BLACK);
@@ -443,9 +437,17 @@ public class PlayerGUI extends JFrame {
                     if (msg.equals("/yourTurn\n")){
                         submitButton.setEnabled(true);
                         endButton.setEnabled(true);
-                    } else if (msg.equals("/otherTurn\n")){
+                        addButton.setEnabled(true);
+                        turnIndex = -1;
+                        nicknameLabel.setForeground(Color.YELLOW);
+                    } else if (msg.startsWith("/otherTurn ")){
                 		submitButton.setEnabled(false);
                         endButton.setEnabled(false);
+                        addButton.setEnabled(false);
+                        List<String> turnList = parseListFromMessage(msg);
+                        System.out.println("msg: " + msg);
+                        turnIndex = turnList.indexOf("T");
+                        nicknameLabel.setForeground(Color.WHITE);
                     }
 
                     if (msg.equals("Game Start!")) {
@@ -463,6 +465,20 @@ public class PlayerGUI extends JFrame {
                         });
                     }
                     
+                    if (msg.startsWith("/otherPlayersName")) {
+                        System.out.println("msg: " + msg);  // 디버깅: 다른 플레이어 이름 출력
+                        otherPlayersName = parseListFromMessage(msg);
+                        if (otherPlayersTileCount != null && !otherPlayersTileCount.isEmpty()) {
+                            updateOtherPlayersPanel();
+                        }                    }
+                    if (msg.startsWith("/otherPlayerTileCounts")) {
+                        System.out.println("msg: " + msg);  // 디버깅: 다른 플레이어 이름 출력
+                        otherPlayersTileCount = parseListFromMessage(msg);
+                        if (otherPlayersTileCount != null && !otherPlayersTileCount.isEmpty()) {
+                            updateOtherPlayersPanel();
+                        }
+                    }
+                    
                     // '/newTileList'로 시작하는 메시지인지 확인
                     if (msg.startsWith("/newTileList")) {
                         // 타일 리스트 메시지 처리
@@ -472,8 +488,6 @@ public class PlayerGUI extends JFrame {
                         // 타일 리스트 메시지 처리
                     	List<LinkedList<Tile>> newBoardTileList = parseLinkedTileListFromMessage(msg);
                     	updateBoardPanel(newBoardTileList);
-//                    	List<Tile> newBoardTileList = parseLinkedTileListFromMessage(msg);
-//                    	updateBoardPanel(newBoardTileList);
                         System.out.println("msg: " + msg);  // 디버깅: 배열 출력
                         System.out.println("tileArray: " + newBoardTileList.toString());  // 디버깅: 배열 출력
                     } else {
@@ -576,6 +590,29 @@ public class PlayerGUI extends JFrame {
 
         System.out.println("Parsed board tile list: " + boardTileList);
         return boardTileList;
+    }
+
+    private List<String> parseListFromMessage(String message) {
+        List<String> list = new ArrayList<>();
+        String rawList = "";
+        if (message.startsWith("/otherPlayersNames ")) 
+            rawList = message.substring("/otherPlayersNames ".length());
+        else if (message.startsWith("/otherPlayerTileCounts "))
+        	rawList = message.substring("/otherPlayerTileCounts ".length());
+        else if (message.startsWith("/otherTurn "))
+        	rawList = message.substring("/otherTurn ".length());
+         
+        // 양쪽 대괄호 제거
+        rawList = rawList.replaceAll("\\[", "").replaceAll("\\]", "");
+        
+        // 쉼표로 구분된 문자열을 분리
+        String[] nameArray = rawList.split(",\\s*"); // 쉼표와 공백을 기준으로 분리
+        
+        // 배열을 리스트로 변환
+        for (String name : nameArray) {
+        	list.add(name.trim()); // 공백 제거 후 리스트에 추가
+        }
+        return list;
     }
 
     // Server에게 network으로 전송
@@ -826,18 +863,41 @@ public class PlayerGUI extends JFrame {
     }
 
     // 다른 플레이어 리스트를 업데이트하는 메서드
-    public void updateOtherPlayersList(List<Player> otherPlayers) {
-        this.otherPlayers = otherPlayers;
-        // GUI 업데이트 로직 (예: 플레이어 정보 갱신)
-        refreshPlayerList();
-    }
-
-    // 플레이어 리스트를 화면에 표시하는 메서드 (예시)
-    public void refreshPlayerList() {
-        for (Player player : otherPlayers) {
-            System.out.println("다른 플레이어: " + player.getName());
+    public void updateOtherPlayersPanel() {
+        // 패널 초기화
+        otherPlayersPanel.removeAll();
+        
+        // 안전성 검사 추가
+        if (otherPlayersName == null || otherPlayersTileCount == null) {
+            return;
         }
+
+        // 두 리스트의 크기가 다른 경우 더 작은 크기를 기준으로 함
+        int size = Math.min(otherPlayersName.size(), otherPlayersTileCount.size());
+        
+        // 다른 플레이어 정보를 라벨로 추가
+        for (int i = 0; i < size; i++) {
+            String playerName = otherPlayersName.get(i);
+            int time = (otherPlayersTime != null && i < otherPlayersTime.length) 
+                ? otherPlayersTime[i] 
+                : 0;
+            String tileCount = otherPlayersTileCount.get(i);
+            
+            JLabel playerLabel = new JLabel(playerName + ": " + time + "초 • 타일: " + tileCount + "개");
+            playerLabel.setForeground(Color.WHITE);
+            playerLabel.setFont(new Font("Arial", Font.BOLD, 15));
+            // turnIndex == i라면 노란색으로 변경
+            if (turnIndex == i) {
+                playerLabel.setForeground(Color.YELLOW);
+            } else {
+                playerLabel.setForeground(Color.WHITE);
+            }
+            
+            otherPlayersPanel.add(playerLabel);
+        }
+
+        // 패널 재배치 및 업데이트
+        otherPlayersPanel.revalidate();
+        otherPlayersPanel.repaint();
     }
-
-
 }

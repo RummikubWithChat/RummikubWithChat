@@ -32,28 +32,9 @@ public class Player {
         }
         return sb.toString();
     }
-
-    // 나를 제외한 다른 플레이어들의 리스트를 반환하는 메서드
-    public static List<Player> getOtherPlayers(Player currentPlayer, List<Player> players) {
-        List<Player> otherPlayers = new ArrayList<>();
-        
-        for (Player player : players) {
-            if (!player.getName().equals(currentPlayer.getName())) {
-                otherPlayers.add(player);
-            }
-        }
-        
-        return otherPlayers;
-    }
-
-    // public static String getCurrentPlayerName(Player currentPlayer, List<Player> players) {
-    //     for (Player player : players) {
-    //         if (player.getName().equals(currentPlayer.getName())) {
-    //             return player.getName(); // 현재 플레이어의 이름을 반환
-    //         }
-    //     }
-    //     return null; // 만약 현재 플레이어를 찾을 수 없으면 null 반환
-    // }
     
+    public int getTileListSize() {
+    	return tileList.size();
+    }
 
 }

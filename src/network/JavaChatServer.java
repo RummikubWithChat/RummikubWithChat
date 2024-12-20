@@ -149,6 +149,16 @@ public class JavaChatServer extends JFrame {
         }
     }
     
+    // 해당 UserService에 맞는 Player 반환
+    private static Player getPlayerByUserService(UserService userService) {
+        for (Map.Entry<Player, UserService> entry : playerToUserServiceMap.entrySet()) {
+            if (entry.getValue() == userService) {
+                return entry.getKey();
+            }
+        }
+        return null; // 일치하는 플레이어가 없으면 null 반환
+    }
+    
     public void GameStart() {
     	AppendText("4명의 플레이어가 연결되었습니다. 게임을 시작합니다!");
     	// 4명의 플레이어 객체 추출
@@ -159,9 +169,23 @@ public class JavaChatServer extends JFrame {
             
             // 각 플레이어에게 게임 시작 메시지 전송
             sendToClient(player, "Game Start!");
-            // 각 클라이언트에 게임 시작 메시지 명시적으로 전송
-            //userService.WriteOne("Game Start!");
         }
+        
+        // 다른 플레이어들의 이름을 문자열로 결합
+        List<UserService> otherPlayers = new ArrayList<>(UserVec); // 복사
+        // 다른 플레이어들의 이름을 리스트로 보내는 부분
+        for (UserService userService : UserVec) {
+            List<String> otherPlayerNames = new ArrayList<>();
+            for (UserService otherPlayerService : otherPlayers) {
+                if (otherPlayerService != userService) { // 현재 플레이어를 제외한 나머지 플레이어 이름
+                    otherPlayerNames.add(otherPlayerService.UserName);
+                }
+            }
+
+            // 다른 플레이어들의 이름 리스트를 전송
+            userService.WriteOne("/otherPlayersNames " + otherPlayerNames);
+        }
+       
 
         // 게임 초기화
         gameInitSetting(tileManage, players);
@@ -220,6 +244,24 @@ public class JavaChatServer extends JFrame {
         }
     }
     
+   public static void sendTileListSizeToClient() {
+	   // 다른 플레이어의 타일 개수 전송
+       for (UserService userService : UserVec) {
+           List<String> otherPlayerTileCounts = new ArrayList<>();
+           
+           // 다른 플레이어들의 타일 개수 정보 모으기
+           for (UserService otherUs : UserVec) {
+               // 현재 userService의 해당 플레이어와 다른 플레이어들만 추가
+               if (otherUs != userService) {
+                   otherPlayerTileCounts.add(String.valueOf(getPlayerByUserService(otherUs).getTileListSize()));
+               }
+           }
+
+           // 타일 개수 정보 전송
+           userService.WriteOne("/otherPlayerTileCounts " + otherPlayerTileCounts);
+       }
+   }
+    
     public static void sendBoardTileListToClient() {
         // 모든 UserService에 대해 WriteAll을 호출
         for (UserService userService : UserVec) {
@@ -245,8 +287,19 @@ public class JavaChatServer extends JFrame {
                 // 현재 턴인 플레이어가 수행할 행동
                 userService.WriteOne("/yourTurn\n");
             } else {
-                // 현재 턴이 아닌 다른 플레이어들이 수행할 행동
-                userService.WriteOne("/otherTurn\n");
+                List<String> isTurnList = new ArrayList<>();
+                
+                // 다른 플레이어들의 isTurn 상태를 리스트에 추가
+                for (UserService otherUs : UserVec) {
+                    
+                    // 자신은 제외하고 다른 플레이어들의 isTurn 값 추가
+                    if (!otherUs.equals(userService)) {
+                        String isTurn = otherUs.equals(playerToUserServiceMap.get(currentPlayer)) ? "T" : "F";
+                        isTurnList.add(isTurn);
+                    }
+                }
+                
+                userService.WriteOne("/otherTurn " + isTurnList);
             }
         }
     }
@@ -362,16 +415,6 @@ public class JavaChatServer extends JFrame {
                 e.printStackTrace();
                 return null;
             }
-        }
-        
-        // 해당 UserService에 맞는 Player 반환
-        private Player getPlayerByUserService(UserService userService) {
-            for (Map.Entry<Player, UserService> entry : playerToUserServiceMap.entrySet()) {
-                if (entry.getValue() == userService) {
-                    return entry.getKey();
-                }
-            }
-            return null; // 일치하는 플레이어가 없으면 null 반환
         }
         
         // 타일을 색깔별로 정렬하여 클라이언트에게 전송

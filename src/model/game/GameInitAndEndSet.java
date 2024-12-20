@@ -26,6 +26,7 @@ public class GameInitAndEndSet {
         for (Player player : players) {
         	JavaChatServer.sendTileListToClient(player);  // 각 플레이어에게 타일 리스트 전송
         }
+        JavaChatServer.sendTileListSizeToClient();
     }
 
     // 게임 종료 조건 체크
