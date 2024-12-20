@@ -181,6 +181,8 @@ public class TileList {
 
         // 생성된 출력 내용 플레이어에게 전송
         JavaChatServer.sendTileListToClient(player);
+        JavaChatServer.sendTileListSizeToClient();
+
         System.out.print(sb.toString());
     }
 
