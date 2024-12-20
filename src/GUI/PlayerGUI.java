@@ -36,6 +36,7 @@ public class PlayerGUI extends JFrame {
     private JPanel boardPanel;
     private JLabel nicknameLabel;
     private JLabel timeLabel;
+    private JLabel tileCountLabel;
     private Timer timer;
     private int remainingTime = 30;
     
@@ -179,6 +180,11 @@ public class PlayerGUI extends JFrame {
         nicknameLabel.setForeground(Color.WHITE);
         nicknameLabel.setFont(new Font("Arial", Font.BOLD, 15));
         playerPanel.add(nicknameLabel, BorderLayout.NORTH);
+        
+        tileCountLabel = new JLabel("• 타일: " + tileList.size() + "개");
+        tileCountLabel.setForeground(Color.WHITE);
+        tileCountLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        playerPanel.add(tileCountLabel);
 
         timeLabel = new JLabel("남은 시간: " + remainingTime + "초");
         timeLabel.setForeground(Color.WHITE);
@@ -201,30 +207,7 @@ public class PlayerGUI extends JFrame {
         exitButton.setFont(new Font("Arial", Font.BOLD, 20));
         exitButton.setBackground(Color.RED);
         exitButton.setForeground(Color.BLACK);
-        exitButton.addActionListener(e -> {
-            int response = JOptionPane.showConfirmDialog(
-                this, "정말 나가시겠습니까?", "나가기 확인",
-                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (response == JOptionPane.YES_OPTION) {
-            	// 서버에 퇴장 알림 전송
-                //SendMessage("/exit " + username);
-            	
-            	// 연결 종료
-                try {
-                    dos.close();  // 데이터 출력 스트림 종료
-                    dis.close();  // 데이터 입력 스트림 종료
-                    socket.close();  // 소켓 종료
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            	
-                // startGUI 창을 새로 열기
-                new startGUI().setVisible(true);
-                
-                // PlayerGUI 창을 닫기
-                this.dispose();
-            }
-        });
+        exitButton.addActionListener(e -> handleExitAction());
 
 
 
@@ -434,22 +417,24 @@ public class PlayerGUI extends JFrame {
                     // Use readUTF to read messages
                     String msg = dis.readUTF();
 
-                    if (msg.equals("/yourTurn\n")){
-                        submitButton.setEnabled(true);
-                        endButton.setEnabled(true);
-                        addButton.setEnabled(true);
-                        turnIndex = -1;
-                        nicknameLabel.setForeground(Color.YELLOW);
-                    } else if (msg.startsWith("/otherTurn ")){
-                		submitButton.setEnabled(false);
-                        endButton.setEnabled(false);
-                        addButton.setEnabled(false);
-                        List<String> turnList = parseListFromMessage(msg);
-                        System.out.println("msg: " + msg);
-                        turnIndex = turnList.indexOf("T");
-                        nicknameLabel.setForeground(Color.WHITE);
-                    }
+                    // 게임 종료
+                    if(msg.equals("GameOverAndDraw")) {
+                    	// *** 게임 종료 후 적절한 내용으로 안내 후 나가는 기능 수정 필요
+                        System.out.println("!!!!GameOver: " + msg);
+                        handleExitAction();
+                    } else if (msg.equals("GameOverAndWin")) {
+                        System.out.println("!!!!GameOver: " + msg);
+                        handleExitAction();
 
+                    } else if (msg.equals("GameOverAndLose")) {
+                        System.out.println("!!!!GameOver: " + msg);
+                        handleExitAction();
+
+                    } else if (msg.equals("GameOver")) {
+                        System.out.println("!!!!GameOver: ");
+                        handleExitAction();
+                    }
+                    
                     if (msg.equals("Game Start!")) {
                         SwingUtilities.invokeLater(() -> {
                             // PlayerGUI 보이게 하기
@@ -465,21 +450,40 @@ public class PlayerGUI extends JFrame {
                         });
                     }
                     
+                    // 내 차례일 때
+                    if (msg.equals("/yourTurn\n")){
+                        submitButton.setEnabled(true);
+                        endButton.setEnabled(true);
+                        addButton.setEnabled(true);
+                        turnIndex = -1;
+                        nicknameLabel.setForeground(Color.YELLOW);
+                    } else if (msg.startsWith("/otherTurn ")){ // 내 차례가 아닐 때
+                		submitButton.setEnabled(false);
+                        endButton.setEnabled(false);
+                        addButton.setEnabled(false);
+                        List<String> turnList = parseListFromMessage(msg);
+                        System.out.println("msg: " + msg);
+                        turnIndex = turnList.indexOf("T");
+                        nicknameLabel.setForeground(Color.WHITE);
+                    } else { AppendText(msg); }
+                    
+                    // 다른 플레이어 정보
                     if (msg.startsWith("/otherPlayersName")) {
                         System.out.println("msg: " + msg);  // 디버깅: 다른 플레이어 이름 출력
                         otherPlayersName = parseListFromMessage(msg);
                         if (otherPlayersTileCount != null && !otherPlayersTileCount.isEmpty()) {
                             updateOtherPlayersPanel();
-                        }                    }
+                        }                    
+                    }
                     if (msg.startsWith("/otherPlayerTileCounts")) {
-                        System.out.println("msg: " + msg);  // 디버깅: 다른 플레이어 이름 출력
+                        System.out.println("msg: " + msg);  // 디버깅: 다른 플레이어 타일 개수 출력
                         otherPlayersTileCount = parseListFromMessage(msg);
                         if (otherPlayersTileCount != null && !otherPlayersTileCount.isEmpty()) {
                             updateOtherPlayersPanel();
                         }
-                    }
+                    } 
                     
-                    // '/newTileList'로 시작하는 메시지인지 확인
+                    // 타일 패널/보드 패널 업데이트
                     if (msg.startsWith("/newTileList")) {
                         // 타일 리스트 메시지 처리
                         List<Tile> newTileList = parseTileListFromMessage(msg);
@@ -899,5 +903,32 @@ public class PlayerGUI extends JFrame {
         // 패널 재배치 및 업데이트
         otherPlayersPanel.revalidate();
         otherPlayersPanel.repaint();
+    }
+    
+    // 나가기
+    private void handleExitAction() {
+        int response = JOptionPane.showConfirmDialog(
+            this, "정말 나가시겠습니까?", "나가기 확인",
+            JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        
+        if (response == JOptionPane.YES_OPTION) {
+            // 서버에 퇴장 알림 전송
+            // SendMessage("/exit " + username);
+            
+            // 연결 종료
+            try {
+                dos.close();  // 데이터 출력 스트림 종료
+                dis.close();  // 데이터 입력 스트림 종료
+                socket.close();  // 소켓 종료
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            
+            // startGUI 창을 새로 열기
+            new startGUI().setVisible(true);
+            
+            // PlayerGUI 창을 닫기
+            this.dispose();
+        }
     }
 }
