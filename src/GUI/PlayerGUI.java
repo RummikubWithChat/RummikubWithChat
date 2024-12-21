@@ -417,20 +417,25 @@ public class PlayerGUI extends JFrame {
                     String msg = dis.readUTF();
 
                     // 게임 종료
-                    if(msg.equals("GameOverAndDraw")) {
+                    if(msg.equals("/GameOverAndDraw")) {
                     	// *** 게임 종료 후 적절한 내용으로 안내 후 나가는 기능 수정 필요
                         System.out.println("!!!!GameOver: " + msg);
                         handleExitAction();
-                    } else if (msg.equals("GameOverAndWin")) {
+                    } else if (msg.equals("/GameOverAndWin")) {
+                        System.out.println("!!!!GameOver: " + msg);
+                        JOptionPane.showMessageDialog(null, "축하합니다. 승리하셨습니다.", "Game End", JOptionPane.WARNING_MESSAGE);
                         System.out.println("!!!!GameOver: " + msg);
                         handleExitAction();
 
-                    } else if (msg.equals("GameOverAndLose")) {
+                    } else if (msg.startsWith("/GameOverAndLose")) {
+                        String winnerName = parseWinnerNameFromMessage(msg);
+                        JOptionPane.showMessageDialog(null, "패배하셨습니다. 승자는 "+winnerName+" 입니다.", "Game End", JOptionPane.WARNING_MESSAGE);
                         System.out.println("!!!!GameOver: " + msg);
                         handleExitAction();
 
-                    } else if (msg.equals("GameOver")) {
+                    } else if (msg.equals("/GameOver")) {
                         System.out.println("!!!!GameOver: ");
+                        JOptionPane.showMessageDialog(null, "플레이어 수가 충분하지 않아 게임이 종료되었습니다.", "Game Over", JOptionPane.WARNING_MESSAGE);
                         handleExitAction();
                     }
                     
@@ -617,6 +622,14 @@ public class PlayerGUI extends JFrame {
         }
         return list;
     }
+
+    public String parseWinnerNameFromMessage(String msg) {
+        if (msg.startsWith("/GameOverAndLose ")) {
+            return msg.substring("/GameOverAndLose ".length()).trim();
+        }
+        return ""; // 해당 명령어로 시작하지 않으면 빈 문자열 반환
+    }
+    
 
     // Server에게 network으로 전송
     public void SendMessage(String msg) {
