@@ -44,6 +44,7 @@ public record GamePlaying(Board boardManage, TileList tileListManage,
             JavaChatServer.sendIsTurnToClient(currentPlayer);
             tileListManage.tileLinkListPrint(onBoardTileList); // 보드 타일 출력 
             tileListManage.tileListPrint(currentPlayer.tileList, currentPlayer);
+            //boardManage.generateTemporaryTileList(currentPlayer);
             
             playChoice = pickOrShow(currentPlayer);
             turnComplete = choiceCheck(playChoice);
