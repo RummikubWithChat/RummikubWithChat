@@ -369,7 +369,7 @@ public class JavaChatServer extends JFrame {
                 if (!player.equals(winner)) {
                     UserService loser = playerToUserServiceMap.get(player);
                     if (loser != null) {
-                        loser.WriteOne("/GameOverAndLose");
+                        loser.WriteOne("/GameOverAndLose "+winner.getName());
                     }
                 }
             }
