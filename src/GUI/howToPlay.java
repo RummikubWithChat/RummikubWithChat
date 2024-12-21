@@ -89,20 +89,31 @@ public class howToPlay extends JFrame {
             doc.insertString(doc.getLength(), "5. 타일 내려놓기\n", titleStyle);
             StyleConstants.setBold(titleStyle, false);
             StyleConstants.setFontSize(titleStyle, 16); // 기본 글자 크기
-            doc.insertString(doc.getLength(), "- 세트 또는 연속으로 타일을 내려놓을 수 있습니다.\n\n", style);
+            doc.insertString(doc.getLength(), "- 세트 또는 연속으로 타일을 내려놓을 수 있습니다.\n", style);
+            doc.insertString(doc.getLength(), "- 자신의 타일을 누르면 하나의 세트 타일에 추가됩니다.\n", style);
+            doc.insertString(doc.getLength(), "- 하나의 세트 타일을 선택 후 ✓ 버튼을 누르면 유효한지 검사한 후 최종적으로 보드에 내려놓아집니다.\n\n", style);
 
-            // 6. 승리 조건
+            // 6. 턴 종료
             StyleConstants.setBold(titleStyle, true);
             StyleConstants.setFontSize(titleStyle, 20); // 글자 크기 키우기
-            doc.insertString(doc.getLength(), "6. 승리 조건\n", titleStyle);
+            doc.insertString(doc.getLength(), "6. 턴 종료\n", titleStyle);
+            StyleConstants.setBold(titleStyle, false);
+            StyleConstants.setFontSize(titleStyle, 16); // 기본 글자 크기
+            doc.insertString(doc.getLength(), "- 모든 행동을 마치고나서 End 버튼을 통해 자신의 턴을 종료합니다.\n", style);
+            doc.insertString(doc.getLength(), "- + 버튼을 눌러 타일을 가져온 후 턴을 종료합니다.\n\n", style);
+
+            // 7. 승리 조건
+            StyleConstants.setBold(titleStyle, true);
+            StyleConstants.setFontSize(titleStyle, 20); // 글자 크기 키우기
+            doc.insertString(doc.getLength(), "7. 승리 조건\n", titleStyle);
             StyleConstants.setBold(titleStyle, false);
             StyleConstants.setFontSize(titleStyle, 16); // 기본 글자 크기
             doc.insertString(doc.getLength(), "- 손에 있는 모든 타일을 내려놓은 플레이어가 승리합니다.\n\n", style);
 
-            // 7. 특별 규칙
+            // 8. 특별 규칙
             StyleConstants.setBold(titleStyle, true);
             StyleConstants.setFontSize(titleStyle, 20); // 글자 크기 키우기
-            doc.insertString(doc.getLength(), "7. 특별 규칙\n", titleStyle);
+            doc.insertString(doc.getLength(), "8. 특별 규칙\n", titleStyle);
             StyleConstants.setBold(titleStyle, false);
             StyleConstants.setFontSize(titleStyle, 16); // 기본 글자 크기
             doc.insertString(doc.getLength(), "- 조커: 다른 숫자나 색상을 대신할 수 있는 특별 타일입니다. 한 번 사용된 조커는 다시 사용할 수 없습니다.\n", style);
