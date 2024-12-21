@@ -359,7 +359,7 @@ public class JavaChatServer extends JFrame {
                 userService.WriteOne("/GameOverAndDraw");
             }
         } else {
-            Player winner = players.get(winnerIndex);
+            Player winner = players.get(winnerIndex -1);
             UserService winnerService = playerToUserServiceMap.get(winner);
             if (winnerService != null) {
                 winnerService.WriteOne("/GameOverAndWin");
