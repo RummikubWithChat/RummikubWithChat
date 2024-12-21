@@ -194,7 +194,8 @@ public class PlayerGUI extends JFrame {
         timeLabel = new JLabel("남은 시간: " + remainingTime + "초");
         timeLabel.setForeground(Color.WHITE);
         timeLabel.setFont(new Font("Arial", Font.BOLD, 15));
-        playerPanel.add(timeLabel);
+        tileCountPanel.add(timeLabel);
+        
 
         // tileCountPanel을 playerPanel의 중앙에 추가
         playerPanel.add(tileCountPanel, BorderLayout.CENTER);
@@ -936,17 +937,37 @@ public class PlayerGUI extends JFrame {
                 : 0;
             String tileCount = otherPlayersTileCount.get(i);
             
-            JLabel playerLabel = new JLabel(playerName + ": " + time + "초 • 타일: " + tileCount + "개");
-            playerLabel.setForeground(Color.WHITE);
-            playerLabel.setFont(new Font("Arial", Font.BOLD, 15));
-            // turnIndex == i라면 노란색으로 변경
+            // 플레이어의 이름과 시간을 담을 라벨
+            JLabel nameLabel = new JLabel(playerName);
+            nameLabel.setForeground(Color.WHITE);
+            nameLabel.setFont(new Font("Arial", Font.BOLD, 20));
+
+            JLabel timeLabel = new JLabel(time + "초");
+            timeLabel.setForeground(Color.WHITE);
+            timeLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+
+            // 타일 개수를 담을 라벨
+            JLabel tileCountLabel = new JLabel("타일: " + tileCount + "개");
+            tileCountLabel.setForeground(Color.WHITE);
+            tileCountLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+
+            // 플레이어가 턴을 수행 중이면 노란색으로 표시
             if (turnIndex == i) {
-                playerLabel.setForeground(Color.YELLOW);
-            } else {
-                playerLabel.setForeground(Color.WHITE);
+                nameLabel.setForeground(Color.YELLOW);
+                timeLabel.setForeground(Color.YELLOW);
+                tileCountLabel.setForeground(Color.YELLOW);
             }
-            
-            otherPlayersPanel.add(playerLabel);
+
+            // 플레이어의 이름, 시간, 타일 개수를 세로로 배치할 패널
+            JPanel playerInfoPanel = new JPanel();
+            playerInfoPanel.setLayout(new BoxLayout(playerInfoPanel, BoxLayout.Y_AXIS));
+            playerInfoPanel.setBackground(new Color(25, 25, 112));
+            playerInfoPanel.add(nameLabel);
+            playerInfoPanel.add(timeLabel);
+            playerInfoPanel.add(tileCountLabel);
+
+            // 다른 플레이어 정보 패널에 추가
+            otherPlayersPanel.add(playerInfoPanel);
         }
 
         // 패널 재배치 및 업데이트
@@ -957,6 +978,10 @@ public class PlayerGUI extends JFrame {
     // 타일 개수 패널 업데이트 함수
     private void updateTileCountPanel(List<Tile> newTileList) {
         tileCountPanel.removeAll(); // 기존 컴포넌트 제거
+        timeLabel = new JLabel("남은 시간: " + remainingTime + "초");
+        timeLabel.setForeground(Color.WHITE);
+        timeLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        tileCountPanel.add(timeLabel);
         tileCountLabel = new JLabel("타일: " + newTileList.size() + "개");
         tileCountLabel.setForeground(Color.WHITE);
         tileCountLabel.setFont(new Font("Arial", Font.BOLD, 15));
