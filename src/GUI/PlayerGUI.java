@@ -513,9 +513,11 @@ public class PlayerGUI extends JFrame {
                     	updateBoardPanel(newBoardTileList);
                         System.out.println("msg: " + msg);  // 디버깅: 배열 출력
                         System.out.println("tileArray: " + newBoardTileList.toString());  // 디버깅: 배열 출력
-                    } else {
-                        // 다른 메시지는 화면에 표시
+                    }
+                    
+                    if(msg.startsWith("[")) {
                         AppendText(msg);
+
                     }
                 } catch (IOException e) {
                     AppendText("dis.read() error");
