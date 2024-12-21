@@ -71,22 +71,27 @@ public class GameInitAndEndSet {
     public static void gameEnd(int gameEndStatus) {
         if(gameEndStatus == 1){
             System.out.println("플레이어 1이 이겼습니다. 게임이 종료되었습니다.");
+            JavaChatServer.sendGameOverToClient(1);
         }
 
         else if(gameEndStatus == 2){
             System.out.println("플레이어 2가 이겼습니다. 게임이 종료되었습니다.");
+            JavaChatServer.sendGameOverToClient(2);
         }
         
         else if(gameEndStatus == 3){
             System.out.println("플레이어 3이 이겼습니다. 게임이 종료되었습니다.");
+            JavaChatServer.sendGameOverToClient(3);
         }
         
         else if(gameEndStatus == 4){
             System.out.println("플레이어 4가 이겼습니다. 게임이 종료되었습니다.");
+            JavaChatServer.sendGameOverToClient(4);
         }
 
         else if (gameEndStatus == 5){
             System.out.println("카드 전체가 빠져서 무승부 처리되었습니다.");
+            JavaChatServer.sendGameOverToClient(-1);
         }
     }
 }

@@ -39,6 +39,9 @@ public class JavaChatServer extends JFrame {
     /**
      * 
      */
+    private static JavaChatServer instance; // 싱글톤 인스턴스
+    private AcceptServer acceptServer; // AcceptServer 인스턴스 저장을 위한 필드 추가
+	
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
     JTextArea textArea;
@@ -48,8 +51,10 @@ public class JavaChatServer extends JFrame {
     private Socket client_socket; // accept() 에서 생성된 client 소켓
     static private Vector<UserService> UserVec = new Vector<>(); // 연결된 사용자를 저장할 벡터, ArrayList와 같이 동적 배열을 만들어주는 컬렉션 객체이나 동기화로 인해 안전성 향상
     private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
+    private boolean isAcceptingClients = true; // 클라이언트 수락 여부 확인용 플래그
 
-    GamePlaying gamePlaying;
+    private GamePlaying gamePlaying;
+    private static boolean isGameStart = false;
     static TileList tileManage = new TileList();
     static Board boardManage = new Board(tileManage);
     static List<Player> players = new ArrayList<>();	
@@ -75,6 +80,7 @@ public class JavaChatServer extends JFrame {
 
 
     public JavaChatServer() {
+        instance = this; // 생성자에서 인스턴스 저장
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 338, 386);
         contentPane = new JPanel();
@@ -114,22 +120,42 @@ public class JavaChatServer extends JFrame {
                 btnServerStart.setText("Chat Server Running..");
                 btnServerStart.setEnabled(false); // 서버를 더이상 실행시키지 못 하게 막는다
                 txtPortNumber.setEnabled(false); // 더이상 포트번호 수정못 하게 막는다
-                AcceptServer accept_server = new AcceptServer();   // 멀티 스레드 객체 생성
-                accept_server.start();
+                startAcceptServer(); // 별도 메소드로 분리
             }
         });
         btnServerStart.setBounds(12, 300, 300, 35);
         contentPane.add(btnServerStart);
     }
+    
+    // AcceptServer 시작을 위한 별도 메소드
+    private void startAcceptServer() {
+        acceptServer = new AcceptServer();
+        acceptServer.start();
+    }
 
     // 새로운 참가자 accept() 하고 user thread를 새로 생성한다. 한번 만들어서 계속 사용하는 스레드
     class AcceptServer extends Thread {
+    	private boolean running = true;
+
+        public void stopAccepting() {
+            running = false;
+        }
+    	
         @SuppressWarnings("unchecked")
         public void run() {
             while (true) { // 사용자 접속을 계속해서 받기 위해 while문
                 try {
                     AppendText("Waiting clients ...");
                     client_socket = socket.accept(); // accept가 일어나기 전까지는 무한 대기중
+                    
+                    // 이미 게임이 진행 중이고 4명이 찼을 경우
+                    if (isGameStart && UserVec.size() >= 4) {
+                        DataOutputStream tempDos = new DataOutputStream(client_socket.getOutputStream());
+                        tempDos.writeUTF("서버가 가득 찼거나 게임이 진행 중입니다.");
+                        client_socket.close();
+                        continue;
+                    }
+                    
                     AppendText("새로운 참가자 from " + client_socket);
                     // User 당 하나씩 Thread 생성
                     UserService new_user = new UserService(client_socket);
@@ -139,6 +165,7 @@ public class JavaChatServer extends JFrame {
                     
                     // 4명 모두 입장 시 게임 시작
                     if (UserVec.size() == 4) {
+                        isAcceptingClients = false; // 더 이상 클라이언트 받지 않음
                     	GameStart();
                     }
                     
@@ -160,6 +187,7 @@ public class JavaChatServer extends JFrame {
     }
     
     public void GameStart() {
+    	isGameStart = true;
     	AppendText("4명의 플레이어가 연결되었습니다. 게임을 시작합니다!");
     	// 4명의 플레이어 객체 추출
         for (UserService userService : UserVec) {
@@ -193,6 +221,26 @@ public class JavaChatServer extends JFrame {
         // 게임 진행
         gamePlaying = new GamePlaying(boardManage, tileManage, players.get(0), players.get(1), players.get(2), players.get(3));
         gamePlaying.gamePlay();
+    }
+    
+    // 게임 종료 후 초기화를 위한 새로운 메소드
+    public static void resetGame() {
+    	if (instance == null) return;
+    	
+        // 게임 관련 데이터 초기화
+        isGameStart = false;
+        UserVec.clear();
+        playerToUserServiceMap.clear();
+        players.clear();
+        tileManage = new TileList();
+        boardManage = new Board(tileManage);
+        
+        // 서버 상태 초기화
+        instance.isAcceptingClients = true;
+        instance.AppendText("게임이 종료되었습니다. 새로운 게임을 위해 대기중...");
+        
+        // 새로운 AcceptServer 시작
+        instance.startAcceptServer();
     }
     
     //JtextArea에 문자열을 출력해 주는 기능을 수행하는 함수
@@ -302,6 +350,42 @@ public class JavaChatServer extends JFrame {
                 userService.WriteOne("/otherTurn " + isTurnList);
             }
         }
+    }
+    
+    public static void sendGameOverToClient(int winnerIndex) {
+        // 기존의 게임 종료 로직
+        if (winnerIndex == -1) {
+            for (UserService userService : UserVec) {
+                userService.WriteOne("/GameOverAndDraw");
+            }
+        } else {
+            Player winner = players.get(winnerIndex);
+            UserService winnerService = playerToUserServiceMap.get(winner);
+            if (winnerService != null) {
+                winnerService.WriteOne("/GameOverAndWin");
+            }
+            
+            for (Player player : players) {
+                if (!player.equals(winner)) {
+                    UserService loser = playerToUserServiceMap.get(player);
+                    if (loser != null) {
+                        loser.WriteOne("/GameOverAndLose");
+                    }
+                }
+            }
+        }
+
+        // 모든 연결 종료
+        for (UserService userService : UserVec) {
+            try {
+                userService.client_socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // 게임 리셋
+        resetGame();
     }
     
     // User 당 생성되는 Thread, 유저의 수만큼 스레스 생성
@@ -491,6 +575,23 @@ public class JavaChatServer extends JFrame {
                         AppendText("사용자 퇴장. 남은 참가자 수 " + UserVec.size());
                     	String br_msg ="["+UserName+"]님이 퇴장 하였습니다.\n";   // 다른 User들에게 전송할 메시지 생성  [추가]
                     	WriteAll(br_msg); // 다른 User들에게 전송  [추가]
+                    	
+                    	// 게임 중이었다면 게임 종료 처리
+                        if (isGameStart && UserVec.size() < 4) {
+                            WriteAll("/GameOver");
+                            if (acceptServer != null) {
+                                acceptServer.stopAccepting(); // 기존 AcceptServer 중지
+                            }
+                            resetGame();  // 게임 리셋 및 새로운 AcceptServer 시작
+                        }
+                        // 모든 플레이어가 나갔을 경우도 리셋
+                        if (UserVec.isEmpty()) {
+                        	if (acceptServer != null) {
+                                acceptServer.stopAccepting(); // 기존 AcceptServer 중지
+                            }
+                            resetGame();
+                        }
+                    	
                         break; 
                     } catch (Exception ee) {
                         break;
