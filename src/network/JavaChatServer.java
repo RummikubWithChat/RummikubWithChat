@@ -196,7 +196,7 @@ public class JavaChatServer extends JFrame {
             playerToUserServiceMap.put(player, userService);   
             
             // 각 플레이어에게 게임 시작 메시지 전송
-            sendToClient(player, "Game Start!");
+            sendToClient(player, "Game Start!\n");
         }
         
         // 다른 플레이어들의 이름을 문자열로 결합
@@ -439,7 +439,7 @@ public class JavaChatServer extends JFrame {
             synchronized (lock) {
                 try {
                     // 클라이언트에게 메시지 요청 전송
-                    WriteOne("입력을 요청합니다. 메시지를 입력해주세요.");
+                    //WriteOne("입력을 요청합니다. 메시지를 입력해주세요.");
 
                     // 클라이언트 응답 대기
                     lock.wait();
@@ -511,7 +511,7 @@ public class JavaChatServer extends JFrame {
                     // 타일을 색깔별로 정렬
                     tileManage.tileSortToColor(player.tileList);
                     // 정렬된 타일 리스트를 클라이언트에게 전송
-                    WriteOne("/newTileList " + player.tileListToString()); 
+                    this.WriteOne("/newTileList " + player.tileListToString()); 
 
                     AppendText("타일 정렬 완료 및 전송: " + UserName);
                 } else {

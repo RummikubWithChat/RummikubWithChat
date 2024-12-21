@@ -454,7 +454,7 @@ public class PlayerGUI extends JFrame {
                         handleExitAction();
                     }
                     
-                    if (msg.equals("Game Start!")) {
+                    if (msg.equals("Game Start!\n")) {
                         SwingUtilities.invokeLater(() -> {
                             // PlayerGUI 보이게 하기
                             setVisible(true);
@@ -484,7 +484,12 @@ public class PlayerGUI extends JFrame {
                         System.out.println("msg: " + msg);
                         turnIndex = turnList.indexOf("T");
                         nicknameLabel.setForeground(Color.WHITE);
-                    } else { AppendText(msg); }
+                    } 
+                    else { 
+                        if(msg.startsWith("[")) {
+                        AppendText(msg);
+                        }
+                    }
                     
                     // 다른 플레이어 정보
                     if (msg.startsWith("/otherPlayersName")) {
@@ -514,11 +519,6 @@ public class PlayerGUI extends JFrame {
                     	updateBoardPanel(newBoardTileList);
                         System.out.println("msg: " + msg);  // 디버깅: 배열 출력
                         System.out.println("tileArray: " + newBoardTileList.toString());  // 디버깅: 배열 출력
-                    }
-                    
-                    if(msg.startsWith("[")) {
-                        AppendText(msg);
-
                     }
                 } catch (IOException e) {
                     AppendText("dis.read() error");
