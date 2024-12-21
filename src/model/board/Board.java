@@ -124,6 +124,7 @@ public class Board {
                     }
                     JavaChatServer.sendTemporaryTileListToClient();
                 }
+
             } catch (NumberFormatException e) {
                 System.out.println("숫자를 입력해야 합니다. 다시 입력하세요.");
             }
@@ -218,18 +219,18 @@ public class Board {
 
             tileManage.tileLinkPrint(onBoardTileList.get(index));
 
-            int detailIndex;
-            try {
-                detailIndex = detailIndexPick(player, index); // 숫자 입력을 기대
-            } catch (NumberFormatException e) {
-                System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
-                continue;
-            }
+            // int detailIndex;
+            // try {
+            //     detailIndex = detailIndexPick(player, index); // 숫자 입력을 기대
+            // } catch (NumberFormatException e) {
+            //     System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+            //     continue;
+            // }
 
-            if (detailIndex > onBoardTileList.get(index).size() - 1) {
-                System.out.println("인덱스의 범위가 잘못되었습니다.");
-                continue;
-            }
+            // if (detailIndex > onBoardTileList.get(index).size() - 1) {
+            //     System.out.println("인덱스의 범위가 잘못되었습니다.");
+            //     continue;
+            // }
 
             if (edit == 1) {
                 tileManage.tileListPrint(player.tileList, player);
@@ -248,34 +249,35 @@ public class Board {
                     continue;
                 }
 
-                int work;
-                try {
-                    work = workPick(player); // 숫자 입력을 기대
-                } catch (NumberFormatException e) {
-                    System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
-                    continue;
-                }
+                // int work;
+                // try {
+                //     work = workPick(player); // 숫자 입력을 기대
+                // } catch (NumberFormatException e) {
+                //     System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+                //     continue;
+                // }
 
-                if (work == 1) {
-                    boolean workCheck = workChecking(index, detailIndex, result, player);
+                // if (work == 1) {
+                //     boolean workCheck = workChecking(index, detailIndex, result, player);
 
-                    if (workCheck) {
-                        onBoardTileList.get(index).add(detailIndex, player.tileList.get(result));
-                        player.tileList.remove(result);
-                    }
-                } else if (work == 2) {
-                    boolean workCheck = workChecking(index, detailIndex, result, player);
+                //     if (workCheck) {
+                //         onBoardTileList.get(index).add(detailIndex, player.tileList.get(result));
+                //         player.tileList.remove(result);
+                //     }
+                // } else if (work == 2) {
+                //     boolean workCheck = workChecking(index, detailIndex, result, player);
 
-                    if (workCheck) {
-                        onBoardTileList.get(index).add(detailIndex + 1, player.tileList.get(result));
-                        player.tileList.remove(result);
-                    }
-                }
-            } else if (edit == 2) {
-                boolean splitCheck = splitCheck(index, detailIndex, player);
+                //     if (workCheck) {
+                //         onBoardTileList.get(index).add(detailIndex + 1, player.tileList.get(result));
+                //         player.tileList.remove(result);
+                //     }
+                // }
+            } 
+            // else if (edit == 2) {
+            //     boolean splitCheck = splitCheck(index, detailIndex, player);
 
-                if (splitCheck) splitOnBoardTileList(player, index, detailIndex);
-            }
+            //     if (splitCheck) splitOnBoardTileList(player, index, detailIndex);
+            // }
         }
     }
 
