@@ -704,6 +704,7 @@ public class PlayerGUI extends JFrame {
 
                     // tileList에서 해당 타일의 인덱스 찾기
                     int tileIndex = tileList.indexOf(tile);
+                    System.out.println("타일리스트출력:"+tileList);
                     
                     // 서버로 타일 인덱스 전송
                     if (tileIndex != -1) {
@@ -862,36 +863,57 @@ public class PlayerGUI extends JFrame {
     
     public void updateBoardPanel(List<LinkedList<Tile>> newBoardTileList) {
         boardPanel.removeAll(); // 기존 UI 삭제
-
+    
         previousTileList.clear();
         previousTileList.addAll(newBoardTileList);
-
+    
         System.out.println("boardLinkedTileList: " + previousTileList);
-
-        for (LinkedList<Tile> group : previousTileList) {
+    
+        for (int groupIndex = 0; groupIndex < previousTileList.size(); groupIndex++) {
+            LinkedList<Tile> group = previousTileList.get(groupIndex);
             System.out.println("group: " + group);
-
-            for (Tile tile : group) {
+    
+            for (int tileIndex = 0; tileIndex < group.size(); tileIndex++) {
+                Tile tile = group.get(tileIndex);
                 System.out.println("tile: " + tile);
-                JLabel tileLabel = createTileLabel(tile);
+    
+                // 타일 라벨을 생성하고, 타일의 그룹 인덱스와 타일 인덱스를 전달
+                JLabel tileLabel = createTileLabel(tile);  // createTileLabel은 그대로 사용
                 if (tileLabel != null) {
+                    // 타일 클릭 시 그룹 인덱스와 타일 인덱스를 서버로 전송
+                    final int groupIdx = groupIndex;  // 그룹 인덱스
+                    final int tileIdx = tileIndex;    // 타일 인덱스
+    
+                    tileLabel.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            // 서버로 그룹 인덱스와 타일 인덱스를 전송
+                            int boardIndex = groupIdx;  // 그룹 인덱스와 타일 인덱스를 결합하여 배열 인덱스 계산
+                            System.out.println("선택된 타일의 배열 인덱스: " + boardIndex);
+    
+                            // 서버로 배열 인덱스 전송
+                            SendMessage(Integer.toString(boardIndex));  // 서버로 배열 인덱스 전송
+                        }
+                    });
+    
                     boardPanel.add(tileLabel);
                 } else {
                     System.out.println("Warning: Null tile label for tile: " + tile);
                 }
             }
-
+    
             // 그룹 간격 추가 (디자인에 따라 조정)
             JLabel spacerLabel = new JLabel("      "); // 간격 증가
             boardPanel.add(spacerLabel);
         }
-
+    
         // 보드 패널 컴포넌트 확인
         System.out.println("boardPanel component count: " + boardPanel.getComponentCount());
-
+    
         boardPanel.revalidate(); // 레이아웃 갱신
         boardPanel.repaint();    // UI 새로고침
     }
+    
 
     // 다른 플레이어 리스트를 업데이트하는 메서드
     public void updateOtherPlayersPanel() {
