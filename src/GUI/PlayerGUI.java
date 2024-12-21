@@ -420,6 +420,7 @@ public class PlayerGUI extends JFrame {
                     if(msg.equals("/GameOverAndDraw")) {
                     	// *** 게임 종료 후 적절한 내용으로 안내 후 나가는 기능 수정 필요
                         System.out.println("!!!!GameOver: " + msg);
+                        JOptionPane.showMessageDialog(null, "타일을 모두 소진하여 무승부 처리되었습니다.", "Game Over", JOptionPane.WARNING_MESSAGE);
                         handleExitAction();
                     } else if (msg.equals("/GameOverAndWin")) {
                         System.out.println("!!!!GameOver: " + msg);
