@@ -91,7 +91,7 @@ public class howToPlay extends JFrame {
             StyleConstants.setFontSize(titleStyle, 16); // 기본 글자 크기
             doc.insertString(doc.getLength(), "- 세트 또는 연속으로 타일을 내려놓을 수 있습니다.\n", style);
             doc.insertString(doc.getLength(), "- 자신의 타일을 누르면 하나의 세트 타일에 추가됩니다.\n", style);
-            doc.insertString(doc.getLength(), "- 하나의 세트 타일을 선택 후 ✓ 버튼을 누르면 유효한지 검사한 후 최종적으로 보드에 내려놓아집니다.\n\n", style);
+            doc.insertString(doc.getLength(), "- 하나의 세트 타일을 선택 후 '✓' 버튼을 누르면 유효한지 검사한 후 최종적으로 보드에 내려놓아집니다.\n\n", style);
 
             // 6. 턴 종료
             StyleConstants.setBold(titleStyle, true);
@@ -100,7 +100,7 @@ public class howToPlay extends JFrame {
             StyleConstants.setBold(titleStyle, false);
             StyleConstants.setFontSize(titleStyle, 16); // 기본 글자 크기
             doc.insertString(doc.getLength(), "- 모든 행동을 마치고나서 End 버튼을 통해 자신의 턴을 종료합니다.\n", style);
-            doc.insertString(doc.getLength(), "- + 버튼을 눌러 타일을 가져온 후 턴을 종료합니다.\n\n", style);
+            doc.insertString(doc.getLength(), "- '+' 버튼을 눌러 타일을 가져온 후 턴을 종료합니다.\n\n", style);
 
             // 7. 승리 조건
             StyleConstants.setBold(titleStyle, true);
