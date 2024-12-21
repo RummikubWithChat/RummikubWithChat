@@ -9,8 +9,13 @@ import network.JavaChatServer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static model.game.PlayChoice.*;
 
@@ -23,6 +28,7 @@ public class Board {
     public static LinkedList<Tile> temporaryTile = new LinkedList<Tile>();
     
     public static LinkedList<Tile> temporaryEditTile = new LinkedList<Tile>();
+    public static LinkedList<Tile> previousEditTile = new LinkedList<Tile>();
     
     public static ArrayList<LinkedList<Tile>> temporaryTileList = new ArrayList<>(106);
     
@@ -84,7 +90,7 @@ public class Board {
 
         // 보드를 다시 되돌리기 (조건 충족X)
         onBoardTileList.removeAll(turnCheckCompleteTileList);
-        onBoardTileList.addAll(previousTileList);
+//        onBoardTileList.addAll(previousTileList);
 
         for (LinkedList<Tile> tiles : turnCheckCompleteTileList) {
             player.tileList.addAll(tiles);
@@ -217,27 +223,16 @@ public class Board {
                 continue;
             }
 
-            if (index > onBoardTileList.size() - 1) {
+            if (index > onBoardTileList.size() - 1 || index < 0) {
                 System.out.println("인덱스의 범위가 잘못되었습니다.");
                 continue;
             }
 
             temporaryEditTile.addAll(onBoardTileList.get(index));
+            previousEditTile.addAll(onBoardTileList.get(index));
+
             System.out.println("temporaryEditTile: " + temporaryEditTile);
             tileManage.tileLinkPrint(onBoardTileList.get(index));
-
-//            int detailIndex;
-//            try {
-//                detailIndex = detailIndexPick(player, index); // 숫자 입력을 기대
-//            } catch (NumberFormatException e) {
-//                System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
-//                continue;
-//            }
-//
-//            if (detailIndex > onBoardTileList.get(index).size() - 1) {
-//                System.out.println("인덱스의 범위가 잘못되었습니다.");
-//                continue;
-//            }
 
             while (true) {
                 tileManage.tileListPrint(player.tileList, player);
@@ -252,13 +247,15 @@ public class Board {
                     	temporaryEditTile.add(player.tileList.get(result));
                     	temporaryTile.add(player.tileList.get(result));
                         player.tileList.remove(result);
+                        JavaChatServer.sendTileListToClient(player);
                         
                         // 타일이 추가될 때마다 temporaryTileList 갱신
                         System.out.println("temporaryEditTile: " + temporaryEditTile);
                         temporaryTileList.clear();
                         temporaryTileList.addAll(onBoardTileList);
-                        // temporaryTile이 비어있지 않은 경우에만 추가
+                        // temporaryEditTile이 비어있지 않은 경우에만 추가
                         if (!temporaryEditTile.isEmpty()) {
+                            temporaryTileList.remove(index);
                             temporaryTileList.add(temporaryEditTile);
                         }
                         JavaChatServer.sendTemporaryTileListToClient();
@@ -311,20 +308,26 @@ public class Board {
 //                if (splitCheck) splitOnBoardTileList(player, index, detailIndex);
             } 
             
-            LinkedList<Tile> isList = EditTempCheck(temporaryEditTile);
-            System.out.println(isList);
-            if (isList != null) {
-                turnCheckCompleteTileList.add(isList);
-                onBoardTileList.remove(index);
-                onBoardTileList.add(isList);
+//            LinkedList<Tile> validList = EditTempCheck(temporaryEditTile);
+            ArrayList<LinkedList<Tile>> vaildTileList = validateAndSplitGroups(temporaryEditTile);
+            
+            System.out.println("vaildTileList: " + vaildTileList);
+            if (vaildTileList != null) {
+            	onBoardTileList.remove(index);
+            	
+            	for (LinkedList<Tile> tile : vaildTileList) {
+            		turnCheckCompleteTileList.add(tile);
+            		onBoardTileList.add(tile);
+            	}
                 
                 // 최종 결과 갱신
                 temporaryTileList.clear();
                 temporaryTileList.addAll(onBoardTileList);
                 JavaChatServer.sendTemporaryTileListToClient();
             } else {
+            	// 실패 시 tileList 재설정, temporaryTileList 재설정
                 player.tileList.addAll(temporaryTile);
-                // 실패 시 temporaryTileList에서 temporaryTile 제거
+                JavaChatServer.sendTileListToClient(player);
                 temporaryTileList.clear();
                 temporaryTileList.addAll(onBoardTileList);
                 JavaChatServer.sendTemporaryTileListToClient();
@@ -425,7 +428,246 @@ public class Board {
         return temporaryEditTile;
     }
 
+    public static ArrayList<LinkedList<Tile>> validateAndSplitGroups(LinkedList<Tile> temporaryEditTile) {
+        ArrayList<LinkedList<Tile>> validGroups = new ArrayList<>();
+        LinkedList<Tile> remainingTiles = new LinkedList<>(temporaryEditTile);
+        
+        if (remainingTiles.size() < 3) {
+            System.out.println("타일이 3개 미만입니다. 유효하지 않습니다.");
+            return null;
+        }
 
+        // 일단 가능한 모든 연속된 숫자 그룹 찾기
+        LinkedList<Tile> consecutiveGroup = findConsecutiveGroup(new LinkedList<>(remainingTiles));
+        if (consecutiveGroup != null) {
+            validGroups.add(consecutiveGroup);
+            remainingTiles.removeAll(consecutiveGroup);
+        }
+
+        // 남은 타일들로 같은 숫자 그룹 찾기
+        while (!remainingTiles.isEmpty()) {
+            LinkedList<Tile> sameNumberGroup = findSameNumberGroup(new LinkedList<>(remainingTiles));
+            if (sameNumberGroup != null) {
+                validGroups.add(sameNumberGroup);
+                remainingTiles.removeAll(sameNumberGroup);
+            } else {
+                // 남은 타일들로 다시 연속된 숫자 그룹 찾기 시도
+                consecutiveGroup = findConsecutiveGroup(new LinkedList<>(remainingTiles));
+                if (consecutiveGroup != null) {
+                    validGroups.add(consecutiveGroup);
+                    remainingTiles.removeAll(consecutiveGroup);
+                } else {
+                    // 더 이상 그룹을 만들 수 없으면 남은 타일들로 마지막 시도
+                    LinkedList<Tile> lastAttempt = tryAllPossibleGroups(new LinkedList<>(remainingTiles));
+                    if (lastAttempt != null) {
+                        validGroups.add(lastAttempt);
+                        remainingTiles.removeAll(lastAttempt);
+                    } else {
+                        System.out.println("일부 타일이 유효한 그룹을 형성하지 못했습니다: " + remainingTiles);
+                        return null;
+                    }
+                }
+            }
+        }
+
+        return validGroups;
+    }
+
+    private static LinkedList<Tile> findConsecutiveGroup(LinkedList<Tile> tiles) {
+        // 숫자 순으로 정렬
+        tiles.sort(Comparator.comparingInt(tile -> tile.number == 999 ? Integer.MAX_VALUE : tile.number));
+
+        LinkedList<Tile> group = new LinkedList<>();
+        TileColor currentColor = null;
+        int previousNumber = -1;
+        int jokerCount = 0;
+
+        for (Tile tile : tiles) {
+            if (tile.number == 999) {
+                jokerCount++;
+                continue;
+            }
+
+            if (currentColor == null) {
+                currentColor = tile.color;
+                previousNumber = tile.number;
+                group.add(tile);
+                continue;
+            }
+
+            if (tile.color == currentColor && (tile.number == previousNumber + 1 || jokerCount > 0)) {
+                if (tile.number != previousNumber + 1) {
+                    jokerCount--;
+                }
+                group.add(tile);
+                previousNumber = tile.number;
+            } else {
+                break;
+            }
+        }
+
+        // 조커를 사용하여 그룹이 3개 이상이 되면 유효한 그룹
+        if (group.size() + jokerCount >= 3) {
+            while (jokerCount > 0) {
+                group.add(new Tile(previousNumber + 1, currentColor)); // 연속된 숫자 추가
+                jokerCount--;
+            }
+            return group;
+        }
+
+        return null;
+    }
+
+    private static LinkedList<Tile> findSameNumberGroup(LinkedList<Tile> tiles) {
+        Map<Integer, List<Tile>> numberGroups = new HashMap<>();
+        List<Tile> jokers = new ArrayList<>();
+        
+        // 조커와 일반 타일 분리
+        for (Tile tile : tiles) {
+            if (tile.number == 999) {
+                jokers.add(tile);
+            } else {
+                numberGroups.computeIfAbsent(tile.number, k -> new ArrayList<>()).add(tile);
+            }
+        }
+        
+        // 각 숫자 그룹에 대해 검사
+        for (Map.Entry<Integer, List<Tile>> entry : numberGroups.entrySet()) {
+            List<Tile> group = entry.getValue();
+            
+            // 이미 3개 이상이면 바로 반환
+            if (group.size() >= 3) {
+                LinkedList<Tile> result = new LinkedList<>(group);
+                return result;
+            }
+            
+            // 2개 이상이고 조커가 있으면 조커를 추가해서 반환
+            if (group.size() >= 2 && !jokers.isEmpty()) {
+                LinkedList<Tile> result = new LinkedList<>(group);
+                result.add(jokers.get(0));
+                return result;
+            }
+        }
+        
+        // 숫자가 하나뿐이고 조커가 2개 이상 있는 경우
+        for (Map.Entry<Integer, List<Tile>> entry : numberGroups.entrySet()) {
+            List<Tile> group = entry.getValue();
+            if (group.size() == 1 && jokers.size() >= 2) {
+                LinkedList<Tile> result = new LinkedList<>(group);
+                result.add(jokers.get(0));
+                result.add(jokers.get(1));
+                return result;
+            }
+        }
+
+        // 조커가 3개 이상인 경우
+        if (jokers.size() >= 3) {
+            return new LinkedList<>(jokers.subList(0, 3));
+        }
+
+        return null;
+    }
+    
+    private static LinkedList<Tile> tryAllPossibleGroups(LinkedList<Tile> tiles) {
+        // 모든 가능한 조합 시도
+        for (int i = 0; i < tiles.size(); i++) {
+            for (int j = i + 1; j < tiles.size(); j++) {
+                LinkedList<Tile> tempGroup = new LinkedList<>();
+                tempGroup.add(tiles.get(i));
+                tempGroup.add(tiles.get(j));
+                
+                // 남은 타일들 중에서 조커를 포함해 가능한 그룹 찾기
+                for (Tile tile : tiles) {
+                    if (!tempGroup.contains(tile)) {
+                        tempGroup.add(tile);
+                        if (isValidGroup(tempGroup)) {
+                            return tempGroup;
+                        }
+                        tempGroup.removeLast();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean isValidGroup(LinkedList<Tile> group) {
+        if (group.size() < 3) return false;
+        
+        // 색상이 같은지 확인
+        boolean sameColor = true;
+        TileColor firstColor = null;
+        for (Tile tile : group) {
+            if (tile.number != 999) {
+                if (firstColor == null) {
+                    firstColor = tile.color;
+                } else if (tile.color != firstColor) {
+                    sameColor = false;
+                    break;
+                }
+            }
+        }
+        
+        if (sameColor) {
+            return checkConsecutiveNumbers(group);
+        }
+        
+        // 숫자가 같은지 확인
+        return checkSameNumbers(group);
+    }
+    
+    private static boolean checkConsecutiveNumbers(LinkedList<Tile> group) {
+        List<Integer> numbers = new ArrayList<>();
+        int jokerCount = 0;
+        
+        // 조커와 일반 타일 분리
+        for (Tile tile : group) {
+            if (tile.number == 999) {
+                jokerCount++;
+            } else {
+                numbers.add(tile.number);
+            }
+        }
+        
+        // 숫자 정렬
+        Collections.sort(numbers);
+        
+        // 연속된 숫자 확인
+        for (int i = 1; i < numbers.size(); i++) {
+            int gap = numbers.get(i) - numbers.get(i-1) - 1;
+            if (gap > 0) {
+                jokerCount -= gap; // 빈 칸을 채우는데 조커 사용
+                if (jokerCount < 0) return false;
+            }
+        }
+        
+        return true;
+    }
+
+    private static boolean checkSameNumbers(LinkedList<Tile> group) {
+        Set<TileColor> colors = new HashSet<>();
+        Integer targetNumber = null;
+        int jokerCount = 0;
+        
+        for (Tile tile : group) {
+            if (tile.number == 999) {
+                jokerCount++;
+                continue;
+            }
+            
+            if (targetNumber == null) {
+                targetNumber = tile.number;
+            } else if (tile.number != targetNumber) {
+                return false;
+            }
+            
+            if (!colors.add(tile.color)) { // 같은 색상이 이미 존재
+                return false;
+            }
+        }
+        
+        return (colors.size() + jokerCount) >= 3;
+    }
 
     private boolean workChecking(int index, int detailIndex, int result, Player player) {
         // 숫자가 같은 경우, 색깔이 달라야 함
