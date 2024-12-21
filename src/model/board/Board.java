@@ -2,10 +2,13 @@ package model.board;
 
 import model.player.Player;
 import model.tile.Tile;
+import model.tile.TileColor;
 import model.tile.TileList;
 import network.JavaChatServer;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Objects;
 
@@ -18,6 +21,8 @@ public class Board {
     public static ArrayList<LinkedList<Tile>> playerPutTileList = new ArrayList<>(106);
 
     public static LinkedList<Tile> temporaryTile = new LinkedList<Tile>();
+    
+    public static LinkedList<Tile> temporaryEditTile = new LinkedList<Tile>();
     
     public static ArrayList<LinkedList<Tile>> temporaryTileList = new ArrayList<>(106);
     
@@ -217,69 +222,209 @@ public class Board {
                 continue;
             }
 
+            temporaryEditTile.addAll(onBoardTileList.get(index));
+            System.out.println("temporaryEditTile: " + temporaryEditTile);
             tileManage.tileLinkPrint(onBoardTileList.get(index));
 
-            // int detailIndex;
-            // try {
-            //     detailIndex = detailIndexPick(player, index); // 숫자 입력을 기대
-            // } catch (NumberFormatException e) {
-            //     System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
-            //     continue;
-            // }
+//            int detailIndex;
+//            try {
+//                detailIndex = detailIndexPick(player, index); // 숫자 입력을 기대
+//            } catch (NumberFormatException e) {
+//                System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+//                continue;
+//            }
+//
+//            if (detailIndex > onBoardTileList.get(index).size() - 1) {
+//                System.out.println("인덱스의 범위가 잘못되었습니다.");
+//                continue;
+//            }
 
-            // if (detailIndex > onBoardTileList.get(index).size() - 1) {
-            //     System.out.println("인덱스의 범위가 잘못되었습니다.");
-            //     continue;
-            // }
-
-            if (edit == 1) {
+            while (true) {
                 tileManage.tileListPrint(player.tileList, player);
-
+                            
                 try {
-                    result = tileIndexPick(player); // 숫자 입력을 기대
+                    result = tileIndexPick(player); // result를 메서드 호출로 받음
+                    if (result == -1) break;
+
+                    if (result < -1 || result >= player.tileList.size()) {
+                        System.out.println("잘못된 값을 입력하였습니다. 다시 입력하세요.");
+                    } else {
+                    	temporaryEditTile.add(player.tileList.get(result));
+                    	temporaryTile.add(player.tileList.get(result));
+                        player.tileList.remove(result);
+                        
+                        // 타일이 추가될 때마다 temporaryTileList 갱신
+                        System.out.println("temporaryEditTile: " + temporaryEditTile);
+                        temporaryTileList.clear();
+                        temporaryTileList.addAll(onBoardTileList);
+                        // temporaryTile이 비어있지 않은 경우에만 추가
+                        if (!temporaryEditTile.isEmpty()) {
+                            temporaryTileList.add(temporaryEditTile);
+                        }
+                        JavaChatServer.sendTemporaryTileListToClient();
+                    }
                 } catch (NumberFormatException e) {
-                    System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
-                    continue;
+                    System.out.println("숫자를 입력해야 합니다. 다시 입력하세요.");
                 }
-
-                if (result == -1) break;
-
-                if (result < -1 || result >= player.tileList.size()) {
-                    System.out.println("잘못된 값을 입력하였습니다. 다시 입력하세요");
-                    continue;
-                }
-
-                // int work;
-                // try {
-                //     work = workPick(player); // 숫자 입력을 기대
-                // } catch (NumberFormatException e) {
-                //     System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
-                //     continue;
-                // }
-
-                // if (work == 1) {
-                //     boolean workCheck = workChecking(index, detailIndex, result, player);
-
-                //     if (workCheck) {
-                //         onBoardTileList.get(index).add(detailIndex, player.tileList.get(result));
-                //         player.tileList.remove(result);
-                //     }
-                // } else if (work == 2) {
-                //     boolean workCheck = workChecking(index, detailIndex, result, player);
-
-                //     if (workCheck) {
-                //         onBoardTileList.get(index).add(detailIndex + 1, player.tileList.get(result));
-                //         player.tileList.remove(result);
-                //     }
-                // }
+//                tileManage.tileListPrint(player.tileList, player);
+//
+//                try {
+//                    result = tileIndexPick(player); // 숫자 입력을 기대
+//                } catch (NumberFormatException e) {
+//                    System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+//                    continue;
+//                }
+//
+//                if (result == -1) break;
+//
+//                if (result < -1 || result >= player.tileList.size()) {
+//                    System.out.println("잘못된 값을 입력하였습니다. 다시 입력하세요");
+//                    continue;
+//                }
+//
+//                int work;
+//                try {
+//                    work = workPick(player); // 숫자 입력을 기대
+//                } catch (NumberFormatException e) {
+//                    System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+//                    continue;
+//                }
+//
+//                if (work == 1) {
+//                    boolean workCheck = workChecking(index, detailIndex, result, player);
+//
+//                    if (workCheck) {
+//                        onBoardTileList.get(index).add(detailIndex, player.tileList.get(result));
+//                        player.tileList.remove(result);
+//                    }
+//                } else if (work == 2) {
+//                    boolean workCheck = workChecking(index, detailIndex, result, player);
+//
+//                    if (workCheck) {
+//                        onBoardTileList.get(index).add(detailIndex + 1, player.tileList.get(result));
+//                        player.tileList.remove(result);
+//                    }
+//                }
+//            } else if (edit == 2) {
+//                boolean splitCheck = splitCheck(index, detailIndex, player);
+//
+//                if (splitCheck) splitOnBoardTileList(player, index, detailIndex);
             } 
-            // else if (edit == 2) {
-            //     boolean splitCheck = splitCheck(index, detailIndex, player);
-
-            //     if (splitCheck) splitOnBoardTileList(player, index, detailIndex);
-            // }
+            
+            LinkedList<Tile> isList = EditTempCheck(temporaryEditTile);
+            System.out.println(isList);
+            if (isList != null) {
+                turnCheckCompleteTileList.add(isList);
+                onBoardTileList.remove(index);
+                onBoardTileList.add(isList);
+                
+                // 최종 결과 갱신
+                temporaryTileList.clear();
+                temporaryTileList.addAll(onBoardTileList);
+                JavaChatServer.sendTemporaryTileListToClient();
+            } else {
+                player.tileList.addAll(temporaryTile);
+                // 실패 시 temporaryTileList에서 temporaryTile 제거
+                temporaryTileList.clear();
+                temporaryTileList.addAll(onBoardTileList);
+                JavaChatServer.sendTemporaryTileListToClient();
+            }        
+            temporaryTile = new LinkedList<Tile>();
+            temporaryEditTile = new LinkedList<Tile>();
         }
     }
+    
+    public static LinkedList<Tile> EditTempCheck(LinkedList<Tile> temporaryEditTile) {
+        int size = temporaryEditTile.size();
+
+        // 타일이 3개 미만이면 Rummikub 규칙에 어긋남
+        if (size < 3) {
+            System.out.println("타일이 3개 미만입니다. 유효하지 않습니다.");
+            return null;
+        }
+
+        // 색상이 같은지 확인하는 변수
+        boolean sameColor = true;
+        TileColor firstColor = null;
+
+        // 첫 번째 색상을 조커가 아닐 때 초기화
+        for (Tile tile : temporaryEditTile) {
+            if (tile.number != 999) {
+                firstColor = tile.color;
+                break;
+            }
+        }
+
+        // 숫자가 같은지 확인하는 변수
+        boolean sameNumber = true;
+        int firstNumber = temporaryEditTile.get(0).number;
+
+        // 조커 개수를 추적
+        int jokerCount = 0;
+
+        for (Tile tile : temporaryEditTile) {
+            if (tile.number == 999) {
+                jokerCount++;
+            } else {
+                if (tile.color != firstColor) {
+                    sameColor = false;
+                }
+                if (tile.number != firstNumber) {
+                    sameNumber = false;
+                }
+            }
+        }
+
+        // 색상과 숫자 패턴이 맞는지 검사
+        if (sameColor) {
+            // 숫자를 기준으로 정렬
+            temporaryEditTile.sort(Comparator.comparingInt(tile -> tile.number == 999 ? Integer.MAX_VALUE : tile.number));
+
+            int neededJokers = 0;
+
+            for (int i = 1; i < size; i++) {
+                int prevNumber = temporaryEditTile.get(i - 1).number == 999 ? -1 : temporaryEditTile.get(i - 1).number;
+                int currentNumber = temporaryEditTile.get(i).number == 999 ? -1 : temporaryEditTile.get(i).number;
+
+                if (currentNumber == -1) {
+                    // 조커가 필요한 경우
+                    neededJokers++;
+                    currentNumber = prevNumber + 1; // 조커가 이전 숫자를 기반으로 연속성 유지
+                }
+
+                if (currentNumber != prevNumber + 1) {
+                    System.out.println("연속된 숫자가 아닙니다. 유효하지 않습니다.");
+                    return null;
+                }
+            }
+
+            if (neededJokers > jokerCount) {
+                System.out.println("조커가 부족합니다. 유효하지 않습니다.");
+                return null;
+            }
+        } else if (sameNumber) {
+            // 같은 숫자 타일은 색상이 중복되지 않아야 함
+            temporaryEditTile.sort(Comparator.comparingInt(tile -> tile.color.ordinal()));
+
+            for (int i = 1; i < size; i++) {
+                TileColor prevColor = temporaryEditTile.get(i - 1).color;
+                TileColor currentColor = temporaryEditTile.get(i).color;
+
+                if (temporaryEditTile.get(i - 1).number != 999 && temporaryEditTile.get(i).number != 999 && currentColor == prevColor) {
+                    System.out.println("같은 색상이 반복됩니다. 유효하지 않습니다.");
+                    return null;
+                }
+            }
+        } else {
+            System.out.println("타일이 Rummikub 규칙을 충족하지 않습니다.");
+            return null;
+        }
+
+        // 유효하다면 정렬된 리스트를 반환
+        System.out.println("타일이 유효합니다.");
+        return temporaryEditTile;
+    }
+
 
 
     private boolean workChecking(int index, int detailIndex, int result, Player player) {
