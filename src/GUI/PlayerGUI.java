@@ -33,6 +33,7 @@ public class PlayerGUI extends JFrame {
     private JPanel contentPane;
     private JPanel tilePanel;
     private JPanel boardPanel;
+    private JPanel tileCountPanel;
     private JLabel nicknameLabel;
     private JLabel timeLabel;
     private JLabel tileCountLabel;
@@ -60,8 +61,6 @@ public class PlayerGUI extends JFrame {
     private ArrayList<LinkedList<Tile>> playerPutTileList = new ArrayList<>(106);
 
     private LinkedList<Tile> temporaryTile = new LinkedList<Tile>();
-    
-    private Map<TileColor, Map<Integer, Integer>> tileCounts = new EnumMap<>(TileColor.class);
     
     // 채팅 관련 변수들
     private JTextArea chatArea;
@@ -180,14 +179,28 @@ public class PlayerGUI extends JFrame {
         nicknameLabel.setFont(new Font("Arial", Font.BOLD, 15));
         playerPanel.add(nicknameLabel, BorderLayout.NORTH);
         
+        // 하단 정보 표시를 위한 패널 추가
+        tileCountPanel = new JPanel();
+        tileCountPanel.setLayout(new BoxLayout(tileCountPanel, BoxLayout.Y_AXIS));
+        tileCountPanel.setOpaque(false);
+
+        // 타일 개수 레이블 추가
         tileCountLabel = new JLabel("• 타일: " + tileList.size() + "개");
         tileCountLabel.setForeground(Color.WHITE);
         tileCountLabel.setFont(new Font("Arial", Font.BOLD, 15));
-        playerPanel.add(tileCountLabel);
+        tileCountPanel.add(tileCountLabel);
 
+        // 남은 시간 레이블 추가
         timeLabel = new JLabel("남은 시간: " + remainingTime + "초");
         timeLabel.setForeground(Color.WHITE);
+        timeLabel.setFont(new Font("Arial", Font.BOLD, 15));
         playerPanel.add(timeLabel);
+
+        // tileCountPanel을 playerPanel의 중앙에 추가
+        playerPanel.add(tileCountPanel, BorderLayout.CENTER);
+
+        // playerPanel을 contentPane에 추가
+        contentPane.add(playerPanel, BorderLayout.SOUTH);
 
         // 타이머 설정 (기존 코드와 동일)
         timer = new Timer(1000, e -> {
@@ -493,6 +506,7 @@ public class PlayerGUI extends JFrame {
                         // 타일 리스트 메시지 처리
                         List<Tile> newTileList = parseTileListFromMessage(msg);
                         updateTilePanel(newTileList);  // 타일 패널 업데이트
+                        updateTileCountPanel(newTileList);	// 타일 개수 패널 업데이트
                     } else if (msg.startsWith("/newBoardTileList")) {
                         // 타일 리스트 메시지 처리
                     	List<LinkedList<Tile>> newBoardTileList = parseLinkedTileListFromMessage(msg);
@@ -917,6 +931,18 @@ public class PlayerGUI extends JFrame {
         otherPlayersPanel.revalidate();
         otherPlayersPanel.repaint();
     }
+    
+    // 타일 개수 패널 업데이트 함수
+    private void updateTileCountPanel(List<Tile> newTileList) {
+        tileCountPanel.removeAll(); // 기존 컴포넌트 제거
+        tileCountLabel = new JLabel("타일: " + newTileList.size() + "개");
+        tileCountLabel.setForeground(Color.WHITE);
+        tileCountLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        tileCountPanel.add(tileCountLabel); // 새 레이블 추가
+        tileCountPanel.revalidate(); // 레이아웃 다시 계산
+        tileCountPanel.repaint(); // 화면 갱신
+    }
+
     
     // 나가기
     private void handleExitAction() {

@@ -189,19 +189,43 @@ public class Board {
 
     public void editOnBoardTileList(Player player) {
         int result = 0;
+
         while (true) {
-            int edit = editCheck(player);
+            int edit;
+            try {
+                edit = editCheck(player); // 숫자 입력을 기대
+            } catch (NumberFormatException e) {
+                System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+                continue;
+            }
+
             if (edit == -1) break;
 
             tileManage.tileLinkListPrint(onBoardTileList);
-            int index = onBoardTileIndexPick(player);
+
+            int index;
+            try {
+                index = onBoardTileIndexPick(player); // 숫자 입력을 기대
+            } catch (NumberFormatException e) {
+                System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+                continue;
+            }
+
             if (index > onBoardTileList.size() - 1) {
                 System.out.println("인덱스의 범위가 잘못되었습니다.");
                 continue;
             }
 
             tileManage.tileLinkPrint(onBoardTileList.get(index));
-            int detailIndex = detailIndexPick(player, index);
+
+            int detailIndex;
+            try {
+                detailIndex = detailIndexPick(player, index); // 숫자 입력을 기대
+            } catch (NumberFormatException e) {
+                System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+                continue;
+            }
+
             if (detailIndex > onBoardTileList.get(index).size() - 1) {
                 System.out.println("인덱스의 범위가 잘못되었습니다.");
                 continue;
@@ -209,38 +233,52 @@ public class Board {
 
             if (edit == 1) {
                 tileManage.tileListPrint(player.tileList, player);
-                result = tileIndexPick(player);
+
+                try {
+                    result = tileIndexPick(player); // 숫자 입력을 기대
+                } catch (NumberFormatException e) {
+                    System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+                    continue;
+                }
+
                 if (result == -1) break;
 
                 if (result < -1 || result >= player.tileList.size()) {
                     System.out.println("잘못된 값을 입력하였습니다. 다시 입력하세요");
+                    continue;
                 }
-                int work = workPick(player);
+
+                int work;
+                try {
+                    work = workPick(player); // 숫자 입력을 기대
+                } catch (NumberFormatException e) {
+                    System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+                    continue;
+                }
 
                 if (work == 1) {
-                    boolean workCheck = false;
-                    workCheck = workChecking(index, detailIndex, result, player);
+                    boolean workCheck = workChecking(index, detailIndex, result, player);
 
                     if (workCheck) {
                         onBoardTileList.get(index).add(detailIndex, player.tileList.get(result));
                         player.tileList.remove(result);
                     }
                 } else if (work == 2) {
-                    boolean workCheck = false;
-                    workCheck = workChecking(index, detailIndex, result, player);
+                    boolean workCheck = workChecking(index, detailIndex, result, player);
 
                     if (workCheck) {
                         onBoardTileList.get(index).add(detailIndex + 1, player.tileList.get(result));
                         player.tileList.remove(result);
                     }
                 }
-            }  else if (edit == 2) {
-                boolean splitCheck = false;
-                splitCheck = splitCheck(index, detailIndex, player);
+            } else if (edit == 2) {
+                boolean splitCheck = splitCheck(index, detailIndex, player);
+
                 if (splitCheck) splitOnBoardTileList(player, index, detailIndex);
             }
         }
     }
+
 
     private boolean workChecking(int index, int detailIndex, int result, Player player) {
         // 숫자가 같은 경우, 색깔이 달라야 함
