@@ -536,8 +536,8 @@ public class PlayerGUI extends JFrame {
     }
     
     private List<Tile> parseTileListFromMessage(String message) {
-    	System.out.println("message: " + message);
-    	
+        System.out.println("message: " + message);
+        
         // 메시지에서 "/tileList " 이후의 부분을 파싱하여 List<Tile>로 변환
         String tileListString = message.substring(12);  // "/newTileList " 이후의 부분
         System.out.println("tileListString: " + tileListString);  // 디버깅: 파싱할 문자열 출력
@@ -549,19 +549,24 @@ public class PlayerGUI extends JFrame {
         System.out.println("tileArray: " + Arrays.toString(tileArray));  // 디버깅: 배열 출력
 
         // 타일을 "번호"와 "색상"으로 분리하여 Tile 객체 생성
-        for (int i = 0; i < tileArray.length; i += 2) {
+        for (int i = 0; i < tileArray.length; i++) {
             try {
-                int number = Integer.parseInt(tileArray[i].trim());  // 번호 부분 파싱
-                TileColor color = TileColor.valueOf(tileArray[i + 1].trim().toUpperCase());  // 색상 부분 파싱
+                // 번호와 색상은 반드시 두 개씩 와야 하므로 배열의 짝수 길이만 처리
+                if (i + 1 < tileArray.length) {  // 색상이 있는 경우
+                    int number = Integer.parseInt(tileArray[i].trim());  // 번호 부분 파싱
+                    TileColor color = TileColor.valueOf(tileArray[i + 1].trim().toUpperCase());  // 색상 부분 파싱
 
-                // Tile 객체 생성 후 리스트에 추가
-                newTileList.add(new Tile(number, color));
+                    // Tile 객체 생성 후 리스트에 추가
+                    newTileList.add(new Tile(number, color));
+                    i++;  // 색상 부분을 처리했으므로, i를 증가시킴
+                } else {
+                    System.err.println("잘못된 타일 포맷: 번호와 색상 쌍이 맞지 않습니다.");
+                }
             } catch (Exception e) {
-                System.err.println("Error parsing tile: " + tileArray[i] + ", " + tileArray[i + 1]);  // 예외 발생 시 오류 메시지 출력
+                System.err.println("Error parsing tile: " + tileArray[i]);
                 e.printStackTrace();
             }
         }
-
         return newTileList;
     }
 
