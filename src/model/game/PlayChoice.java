@@ -33,15 +33,46 @@ public class PlayChoice {
         String response = JavaChatServer.getInputFromPlayer(player);
         
         if (response.startsWith("/tileindex ")) {
-        	
-            GamePlaying.setIsSelectedOnTileList(true); // tileList 에서 선택됨
-	        return "a " + response.split("\\s+")[1];
-	    } else if (response.startsWith("/boardindex")) {
-            GamePlaying.setIsSelectedOnBoard(true); // board 에서 선택됨
-	        return "e " + response.split("\\s+")[1];
-	    } else {
-	    	return response;
-	    }
+            try {
+                // "/tileIndex" 이후 숫자 추출
+                String[] parts = response.split("\\s+");
+                if (parts.length > 1) {
+                    int index = Integer.parseInt(parts[1]);
+                    if (index >= 0) {
+                        GamePlaying.setIsSelectedOnTileList(true); // tileList에서 선택됨
+                        return "a " + index;
+                    } else {
+                        sendToClient(player, "유효하지 않은 인덱스입니다. 다시 시도하세요.");
+                    }
+                } else {
+                    sendToClient(player, "인덱스를 입력해주세요.");
+                }
+            } catch (NumberFormatException e) {
+                sendToClient(player, "인덱스는 숫자여야 합니다. 다시 시도하세요.");
+            }
+        } else if (response.startsWith("/boardindex")) {
+            try {
+                // "/boardIndex" 이후 숫자 추출
+                String[] parts = response.split("\\s+");
+                if (parts.length > 1) {
+                    int index = Integer.parseInt(parts[1]);
+                    if (index >= 0) {
+                        GamePlaying.setIsSelectedOnBoard(true); // board에서 선택됨
+                        return "e " + index;
+                    } else {
+                        sendToClient(player, "유효하지 않은 인덱스입니다. 다시 시도하세요.");
+                    }
+                } else {
+                    sendToClient(player, "인덱스를 입력해주세요.");
+                }
+            } catch (NumberFormatException e) {
+                sendToClient(player, "인덱스는 숫자여야 합니다. 다시 시도하세요.");
+            }
+        } else {
+            sendToClient(player, "잘못된 명령어입니다.");
+            return response;
+        }
+        return null; // 유효하지 않은 입력일 경우 null 반환
     }
 
     // 배열 수정/배열 나누기/완료 처리 선택
