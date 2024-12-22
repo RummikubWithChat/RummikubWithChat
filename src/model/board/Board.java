@@ -429,48 +429,121 @@ public class Board {
     }
 
     public static ArrayList<LinkedList<Tile>> validateAndSplitGroups(LinkedList<Tile> temporaryEditTile) {
-        ArrayList<LinkedList<Tile>> validGroups = new ArrayList<>();
-        LinkedList<Tile> remainingTiles = new LinkedList<>(temporaryEditTile);
-        
-        if (remainingTiles.size() < 3) {
+        if (temporaryEditTile.size() < 3) {
             System.out.println("타일이 3개 미만입니다. 유효하지 않습니다.");
             return null;
         }
 
-        // 일단 가능한 모든 연속된 숫자 그룹 찾기
-        LinkedList<Tile> consecutiveGroup = findConsecutiveGroup(new LinkedList<>(remainingTiles));
-        if (consecutiveGroup != null) {
-            validGroups.add(consecutiveGroup);
-            remainingTiles.removeAll(consecutiveGroup);
-        }
-
-        // 남은 타일들로 같은 숫자 그룹 찾기
-        while (!remainingTiles.isEmpty()) {
-            LinkedList<Tile> sameNumberGroup = findSameNumberGroup(new LinkedList<>(remainingTiles));
-            if (sameNumberGroup != null) {
-                validGroups.add(sameNumberGroup);
-                remainingTiles.removeAll(sameNumberGroup);
-            } else {
-                // 남은 타일들로 다시 연속된 숫자 그룹 찾기 시도
-                consecutiveGroup = findConsecutiveGroup(new LinkedList<>(remainingTiles));
-                if (consecutiveGroup != null) {
-                    validGroups.add(consecutiveGroup);
-                    remainingTiles.removeAll(consecutiveGroup);
-                } else {
-                    // 더 이상 그룹을 만들 수 없으면 남은 타일들로 마지막 시도
-                    LinkedList<Tile> lastAttempt = tryAllPossibleGroups(new LinkedList<>(remainingTiles));
-                    if (lastAttempt != null) {
-                        validGroups.add(lastAttempt);
-                        remainingTiles.removeAll(lastAttempt);
-                    } else {
-                        System.out.println("일부 타일이 유효한 그룹을 형성하지 못했습니다: " + remainingTiles);
-                        return null;
+        // 모든 가능한 분할 지점을 시도
+        for (int i = 3; i <= temporaryEditTile.size() - 3; i++) {
+            for (List<Tile> subGroup : getCombinations(temporaryEditTile, i)) {
+                ArrayList<LinkedList<Tile>> validGroups = new ArrayList<>();
+                LinkedList<Tile> remainingTiles = new LinkedList<>(temporaryEditTile);
+                
+                LinkedList<Tile> firstGroup = new LinkedList<>(subGroup);
+                if (isValidGroup(firstGroup)) {
+                    validGroups.add(firstGroup);
+                    remainingTiles.removeAll(firstGroup);
+                    
+                    LinkedList<Tile> secondGroup = new LinkedList<>(remainingTiles);
+                    if (isValidGroup(secondGroup)) {
+                        validGroups.add(secondGroup);
+                        return validGroups;
                     }
                 }
             }
         }
+        
+        // 단일 그룹으로도 시도
+        LinkedList<Tile> singleGroup = new LinkedList<>(temporaryEditTile);
+        if (isValidGroup(singleGroup)) {
+            ArrayList<LinkedList<Tile>> validGroups = new ArrayList<>();
+            validGroups.add(singleGroup);
+            
+            for (LinkedList<Tile> group : validGroups) {
+                sortTileGroup(group);
+            }
+            
+            return validGroups;
+        }
 
-        return validGroups;
+        System.out.println("유효한 그룹을 찾을 수 없습니다.");
+        return null;
+    }
+
+    private static List<List<Tile>> getCombinations(LinkedList<Tile> tiles, int size) {
+        List<List<Tile>> combinations = new ArrayList<>();
+        getCombinationsHelper(tiles, size, 0, new ArrayList<>(), combinations);
+        return combinations;
+    }
+
+    private static void getCombinationsHelper(LinkedList<Tile> tiles, int size, int start, 
+                                            List<Tile> current, List<List<Tile>> result) {
+        if (current.size() == size) {
+            result.add(new ArrayList<>(current));
+            return;
+        }
+        
+        for (int i = start; i < tiles.size(); i++) {
+            current.add(tiles.get(i));
+            getCombinationsHelper(tiles, size, i + 1, current, result);
+            current.remove(current.size() - 1);
+        }
+    }
+    
+    private static void sortTileGroup(LinkedList<Tile> group) {
+        // 먼저 첫 번째 타일로 그룹 타입 파악 (연속된 숫자인지, 같은 숫자인지)
+        boolean isConsecutive = isConsecutiveGroup(group);
+        
+        if (isConsecutive) {
+            // 연속된 숫자 그룹은 숫자 기준 오름차순 정렬
+            group.sort(Comparator.comparingInt(tile -> tile.number == 999 ? 
+                findJokerNumber(group, tile) : tile.number));
+        } else {
+            // 같은 숫자 그룹은 색상 기준 정렬
+            group.sort(Comparator.comparingInt(tile -> tile.color.ordinal()));
+        }
+    }
+    
+    private static boolean isConsecutiveGroup(LinkedList<Tile> group) {
+        // 조커를 제외한 타일들의 색상이 모두 같으면 연속된 숫자 그룹
+        TileColor firstColor = null;
+        for (Tile tile : group) {
+            if (tile.number != 999) {
+                if (firstColor == null) {
+                    firstColor = tile.color;
+                } else if (tile.color != firstColor) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static int findJokerNumber(LinkedList<Tile> group, Tile joker) {
+        // 조커의 숫자 값을 결정 (연속된 숫자에서 빈 곳 채우기)
+        List<Integer> numbers = new ArrayList<>();
+        for (Tile tile : group) {
+            if (tile.number != 999) {
+                numbers.add(tile.number);
+            }
+        }
+        Collections.sort(numbers);
+        
+        // 첫 번째 빈 숫자 찾기
+        for (int i = 1; i < numbers.size(); i++) {
+            if (numbers.get(i) - numbers.get(i-1) > 1) {
+                return numbers.get(i-1) + 1;
+            }
+        }
+        
+        // 앞뒤에 없으면 양 끝 확인
+        if (!numbers.isEmpty()) {
+            if (numbers.get(0) > 1) return numbers.get(0) - 1;
+            return numbers.get(numbers.size() - 1) + 1;
+        }
+        
+        return 999; // 기본값
     }
 
     private static LinkedList<Tile> findConsecutiveGroup(LinkedList<Tile> tiles) {
