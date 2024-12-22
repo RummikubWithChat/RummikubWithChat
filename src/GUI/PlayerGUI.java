@@ -37,8 +37,6 @@ public class PlayerGUI extends JFrame {
     private JLabel nicknameLabel;
     private JLabel timeLabel;
     private JLabel tileCountLabel;
-    private Timer timer;
-    private int remainingTime = 30;
     
     private JButton endButton;
     private JButton submitButton;
@@ -190,29 +188,11 @@ public class PlayerGUI extends JFrame {
         tileCountLabel.setFont(new Font("Arial", Font.BOLD, 15));
         tileCountPanel.add(tileCountLabel);
 
-        // 남은 시간 레이블 추가
-        timeLabel = new JLabel("남은 시간: " + remainingTime + "초");
-        timeLabel.setForeground(Color.WHITE);
-        timeLabel.setFont(new Font("Arial", Font.BOLD, 15));
-        tileCountPanel.add(timeLabel);
-        
-
         // tileCountPanel을 playerPanel의 중앙에 추가
         playerPanel.add(tileCountPanel, BorderLayout.CENTER);
 
         // playerPanel을 contentPane에 추가
         contentPane.add(playerPanel, BorderLayout.SOUTH);
-
-        // 타이머 설정 (기존 코드와 동일)
-        timer = new Timer(1000, e -> {
-            if (remainingTime > 0) {
-                remainingTime--;
-                timeLabel.setText("남은 시간: " + remainingTime + "초");
-            } else {
-                timer.stop();
-            }
-        });
-        timer.start();
         
         // "나가기" 버튼 생성
         JButton exitButton = new JButton("exit");
@@ -437,10 +417,11 @@ public class PlayerGUI extends JFrame {
                         JOptionPane.showMessageDialog(null, "타일을 모두 소진하여 무승부 처리되었습니다.", "Game Over", JOptionPane.WARNING_MESSAGE);
                         handleExitAction();
                     } else if (msg.equals("/GameOverAndWin")) {
-                        System.out.println("!!!!GameOver: " + msg);
-                        JOptionPane.showMessageDialog(null, "축하합니다. 승리하셨습니다.", "Game End", JOptionPane.WARNING_MESSAGE);
-                        System.out.println("!!!!GameOver: " + msg);
-                        handleExitAction();
+                        SwingUtilities.invokeLater(() -> {
+                            JOptionPane.showMessageDialog(null, "축하합니다. 승리하셨습니다.", "Game End", JOptionPane.WARNING_MESSAGE);
+                            System.out.println("!!!!GameOver: " + msg);
+                            handleExitAction();
+                        });
 
                     } else if (msg.startsWith("/GameOverAndLose")) {
                         String winnerName = parseWinnerNameFromMessage(msg);
@@ -944,10 +925,6 @@ public class PlayerGUI extends JFrame {
             nameLabel.setForeground(Color.WHITE);
             nameLabel.setFont(new Font("Arial", Font.BOLD, 20));
 
-            JLabel timeLabel = new JLabel(time + "초");
-            timeLabel.setForeground(Color.WHITE);
-            timeLabel.setFont(new Font("Arial", Font.PLAIN, 15));
-
             // 타일 개수를 담을 라벨
             JLabel tileCountLabel = new JLabel("타일: " + tileCount + "개");
             tileCountLabel.setForeground(Color.WHITE);
@@ -956,7 +933,6 @@ public class PlayerGUI extends JFrame {
             // 플레이어가 턴을 수행 중이면 노란색으로 표시
             if (turnIndex == i) {
                 nameLabel.setForeground(Color.YELLOW);
-                timeLabel.setForeground(Color.YELLOW);
                 tileCountLabel.setForeground(Color.YELLOW);
             }
 
@@ -965,7 +941,6 @@ public class PlayerGUI extends JFrame {
             playerInfoPanel.setLayout(new BoxLayout(playerInfoPanel, BoxLayout.Y_AXIS));
             playerInfoPanel.setBackground(new Color(25, 25, 112));
             playerInfoPanel.add(nameLabel);
-            playerInfoPanel.add(timeLabel);
             playerInfoPanel.add(tileCountLabel);
 
             // 다른 플레이어 정보 패널에 추가
@@ -980,10 +955,6 @@ public class PlayerGUI extends JFrame {
     // 타일 개수 패널 업데이트 함수
     private void updateTileCountPanel(List<Tile> newTileList) {
         tileCountPanel.removeAll(); // 기존 컴포넌트 제거
-        timeLabel = new JLabel("남은 시간: " + remainingTime + "초");
-        timeLabel.setForeground(Color.WHITE);
-        timeLabel.setFont(new Font("Arial", Font.BOLD, 15));
-        tileCountPanel.add(timeLabel);
         tileCountLabel = new JLabel("타일: " + newTileList.size() + "개");
         tileCountLabel.setForeground(Color.WHITE);
         tileCountLabel.setFont(new Font("Arial", Font.BOLD, 15));
