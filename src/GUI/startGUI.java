@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 
 public class startGUI extends JFrame {
     public startGUI() {
-        setTitle("start GUI");
+        setTitle("Welcome to Rummikub with Chat Game!");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null); // 레이아웃 매니저 비활성화

@@ -2,6 +2,7 @@ package model.game;
 
 import model.player.Player;
 import network.JavaChatServer;
+import model.game.GamePlaying;
 import static model.board.Board.onBoardTileList;
 
 public class PlayChoice {
@@ -28,8 +29,19 @@ public class PlayChoice {
     // 카드 리스트 생성/추가
     public static String cardListAddOrEdit(Player player) {
         System.out.print("\n새로운 카드리스트 생성 : A or a / 기존 리스트에 추가 : E or e :: ");
-        //sendToClient(player, "\n새로운 카드리스트 생성 : A or a / 기존 리스트에 추가 : E or e :: ");
-        return JavaChatServer.getInputFromPlayer(player);
+        sendToClient(player, "\n새로운 카드리스트 생성 : A or a / 기존 리스트에 추가 : E or e :: ");
+        String response = JavaChatServer.getInputFromPlayer(player);
+        
+        if (response.startsWith("/tileindex ")) {
+        	
+            GamePlaying.setIsSelectedOnTileList(true); // tileList 에서 선택됨
+	        return "a " + response.split("\\s+")[1];
+	    } else if (response.startsWith("/boardindex")) {
+            GamePlaying.setIsSelectedOnBoard(true); // board 에서 선택됨
+	        return "e " + response.split("\\s+")[1];
+	    } else {
+	    	return response;
+	    }
     }
 
     // 배열 수정/배열 나누기/완료 처리 선택
@@ -43,16 +55,64 @@ public class PlayChoice {
     public static int onBoardTileIndexPick(Player player) {
         System.out.println();
         System.out.print("인덱스를 고르세요. (0~" + (onBoardTileList.size() - 1) + ") : ");
-        //sendToClient(player, "인덱스를 고르세요. (0~" + (onBoardTileList.size() - 1) + ") : ");
-        return Integer.parseInt(JavaChatServer.getInputFromPlayer(player));
+        sendToClient(player, "인덱스를 고르세요. (0~" + (onBoardTileList.size() - 1) + ") : ");
+        
+        String response = JavaChatServer.getInputFromPlayer(player);
+		 
+		// 응답이 "-1"이라면 즉시 반환
+	    if (response.equals("-1")) {
+	        return -1;
+	    }
+
+		 if (response.startsWith("/boardindex ")) { // 이미 toLowerCase() 됨
+	        try {
+	            // "/boardIndex" 이후 숫자 추출
+	            int index = Integer.parseInt(response.split("\\s+")[1]);
+	            if (index >= -1 && index < player.tileList.size()) {
+//	                GamePlaying.setIsSelectedOnBoard(true); // board 에서 선택됨
+	                return index;
+	            } else {
+	                sendToClient(player, "유효하지 않은 인덱스입니다. 다시 시도하세요.");
+	            }
+	        } catch (Exception e) {
+	            sendToClient(player, "인덱스는 숫자여야 합니다. 다시 시도하세요.");
+	        }
+	    } else {
+	        sendToClient(player, "잘못된 명령어입니다.");
+	    }
+	    return 999; // 유효하지 않은 경우: 무조건 타일 리스트 인덱스보다 큰 값 넘김    
     }
 
     // 플레이어의 타일 목록에서 인덱스 선택
     public static int tileIndexPick(Player player) {
-    	 System.out.println();
-         System.out.print("인덱스를 고르세요, 완료하려면 -1을 입력하세요. (0~" + (player.tileList.size() - 1) + ") : ");
-        // sendToClient(player, "인덱스를 고르세요, 완료하려면 -1을 입력하세요. (0~" + (player.tileList.size() - 1) + ") : ");
-        return Integer.parseInt(JavaChatServer.getInputFromPlayer(player));
+		 System.out.println();
+		 System.out.print("인덱스를 고르세요, 완료하려면 -1을 입력하세요. (0~" + (player.tileList.size() - 1) + ") : ");
+		 sendToClient(player, "인덱스를 고르세요, 완료하려면 -1을 입력하세요. (0~" + (player.tileList.size() - 1) + ") : ");
+		 
+		 String response = JavaChatServer.getInputFromPlayer(player);
+		 
+		// 응답이 "-1"이라면 즉시 반환
+	    if (response.equals("-1")) {
+	        return -1;
+	    }
+
+		 if (response.startsWith("/tileindex ")) {
+	        try {
+	            // "/tileIndex" 이후 숫자 추출
+	            int index = Integer.parseInt(response.split("\\s+")[1]);
+	            if (index >= -1 && index < player.tileList.size()) {
+//	                GamePlaying.setIsSelectedOnTileList(true); // tileList 에서 선택됨
+	                return index;
+	            } else {
+	                sendToClient(player, "유효하지 않은 인덱스입니다. 다시 시도하세요.");
+	            }
+	        } catch (Exception e) {
+	            sendToClient(player, "인덱스는 숫자여야 합니다. 다시 시도하세요.");
+	        }
+	    } else {
+	        sendToClient(player, "잘못된 명령어입니다.");
+	    }
+	    return 999; // 유효하지 않은 경우: 무조건 타일 리스트 인덱스보다 큰 값 넘김
     }
 
     // 수정 기준 인덱스 선택

@@ -76,7 +76,7 @@ public class PlayerGUI extends JFrame {
     public PlayerGUI(String username, String ip_addr, String port_no) {	
     	this.username = username;
     	
-        setTitle("Player GUI");
+        setTitle("☃⋆‧₊⊹. ︎Player ˗ " + username + " .⊹₊‧⋆☃︎");
         setSize(1000, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -692,7 +692,7 @@ public class PlayerGUI extends JFrame {
                     
                     // 서버로 타일 인덱스 전송
                     if (tileIndex != -1) {
-                        SendMessage(Integer.toString(tileIndex));
+                    	SendMessage("/tileIndex " + tileIndex);
                     }
                 }
                 isSelected = !isSelected; // 상태 토글
@@ -866,7 +866,6 @@ public class PlayerGUI extends JFrame {
                 if (tileLabel != null) {
                     // 타일 클릭 시 그룹 인덱스와 타일 인덱스를 서버로 전송
                     final int groupIdx = groupIndex;  // 그룹 인덱스
-                    final int tileIdx = tileIndex;    // 타일 인덱스
     
                     tileLabel.addMouseListener(new MouseAdapter() {
                         @Override
@@ -876,7 +875,7 @@ public class PlayerGUI extends JFrame {
                             System.out.println("선택된 타일의 배열 인덱스: " + boardIndex);
     
                             // 서버로 배열 인덱스 전송
-                            SendMessage(Integer.toString(boardIndex));  // 서버로 배열 인덱스 전송
+                            SendMessage("/boardIndex " + boardIndex);
                         }
                     });
     
