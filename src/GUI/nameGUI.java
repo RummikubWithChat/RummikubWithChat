@@ -16,7 +16,7 @@ public class nameGUI extends JFrame {
     private PlayerGUI playerGUI;
 
     public nameGUI() {
-        setTitle("Chat Client");
+        setTitle("Player Configuration");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null); // 레이아웃 매니저 비활성화
