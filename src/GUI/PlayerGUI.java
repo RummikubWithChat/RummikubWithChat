@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.Timer;
-
 import model.game.GamePlaying;
 import model.player.Player;
 import model.tile.*;
@@ -89,6 +87,8 @@ public class PlayerGUI extends JFrame {
         otherPlayersPanel.setOpaque(false);
         otherPlayersPanel.setBorder(new EmptyBorder(10, 20, 30, 20));
 
+        // playerInfoPanel의 가로 길이를 늘림
+        otherPlayersPanel.setPreferredSize(new Dimension(130, getHeight()));
         contentPane.add(otherPlayersPanel, BorderLayout.WEST);
 
         // 보드 패널 설정 (드래그 앤 드롭 가능)
@@ -151,7 +151,7 @@ public class PlayerGUI extends JFrame {
 
         // 보드 패널의 가로, 세로 길이를 화면 크기에 비례하여 설정
         int boardPanelWidth = (int) (screenWidth * 0.65);  // 화면 가로 길이의 70%
-        int boardPanelHeight = (int) (screenHeight * 0.7);  // 화면 세로 길이의 50%
+        int boardPanelHeight = (int) (screenHeight * 1.0);  // 화면 세로 길이의 100%
 
         // 보드 패널 크기 설정
         boardPanel.setPreferredSize(new Dimension(boardPanelWidth, boardPanelHeight));
@@ -939,6 +939,7 @@ public class PlayerGUI extends JFrame {
             JPanel playerInfoPanel = new JPanel();
             playerInfoPanel.setLayout(new BoxLayout(playerInfoPanel, BoxLayout.Y_AXIS));
             playerInfoPanel.setBackground(new Color(25, 25, 112));
+
             playerInfoPanel.add(nameLabel);
             playerInfoPanel.add(tileCountLabel);
 
