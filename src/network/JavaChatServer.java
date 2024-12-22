@@ -270,7 +270,7 @@ public class JavaChatServer extends JFrame {
             response = response.trim().toLowerCase();
             
             // "[숫자]" 패턴을 제거하고 숫자만 추출
-            response = response.replaceAll("^\\[\\d+\\]", "").trim();
+            response = response.replaceAll("^\\[.*?\\]", "").trim();
             
             System.out.println("[DEBUG] 입력값 (소문자, 공백 제거 후): " + response); // 디버깅용 로그
             
