@@ -5,6 +5,10 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 
 import javax.swing.*;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 public class nameGUI extends JFrame {
 
@@ -34,6 +38,40 @@ public class nameGUI extends JFrame {
         nameField = new JTextField();
         nameField.setFont(new Font("Arial", Font.BOLD, 18));
         nameField.setBounds(250, 190, 300, 40);
+
+        // 닉네임 글자 수 제한 (최대 10자)
+        ((AbstractDocument) nameField.getDocument()).setDocumentFilter(new DocumentFilter() {
+            private final int MAX_LENGTH = 10;
+
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) 
+                    throws BadLocationException {
+                if (fb.getDocument().getLength() + string.length() <= MAX_LENGTH) {
+                    super.insertString(fb, offset, string, attr);
+                } else {
+                    showLengthExceededWarning();
+                }
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) 
+                    throws BadLocationException {
+                if (fb.getDocument().getLength() - length + text.length() <= MAX_LENGTH) {
+                    super.replace(fb, offset, length, text, attrs);
+                } else {
+                    showLengthExceededWarning();
+                }
+            }
+
+            private void showLengthExceededWarning() {
+                JOptionPane.showMessageDialog(
+                    nameGUI.this,
+                    "닉네임은 최대 10자까지 입력할 수 있습니다!",
+                    "입력 오류",
+                    JOptionPane.WARNING_MESSAGE
+                );
+            }
+        });
         add(nameField);
 
         // IP 주소 입력 라벨
