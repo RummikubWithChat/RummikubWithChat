@@ -112,6 +112,7 @@ public class howToPlay extends JFrame {
             doc.insertString(doc.getLength(), "7. 턴 종료\n", titleStyle);
             StyleConstants.setBold(titleStyle, false);
             StyleConstants.setFontSize(titleStyle, 16); // 기본 글자 크기
+            doc.insertString(doc.getLength(), "- **주의** 타일을 한 번 편집하기 시작하고나면, 반드시 '✓'을 통해 행동을 마친 후 턴을 종료할 수 있습니다.\n", style);
             doc.insertString(doc.getLength(), "- 모든 행동을 마치고나서 'End' 버튼을 통해 자신의 턴을 종료합니다.\n", style);
             doc.insertString(doc.getLength(), "- '+' 버튼을 눌러 타일을 가져온 후 턴을 종료합니다.\n\n", style);
 
