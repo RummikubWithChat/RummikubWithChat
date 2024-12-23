@@ -10,7 +10,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 
-public class nameGUI extends JFrame {
+public class configurationGUI extends JFrame {
 
     private JTextField nameField;
     private JTextField ipField;
@@ -19,7 +19,7 @@ public class nameGUI extends JFrame {
 
     private PlayerGUI playerGUI;
 
-    public nameGUI() {
+    public configurationGUI() {
         setTitle("Player Configuration");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -65,7 +65,7 @@ public class nameGUI extends JFrame {
 
             private void showLengthExceededWarning() {
                 JOptionPane.showMessageDialog(
-                    nameGUI.this,
+                    configurationGUI.this,
                     "닉네임은 최대 10자까지 입력할 수 있습니다!",
                     "입력 오류",
                     JOptionPane.WARNING_MESSAGE
@@ -150,7 +150,7 @@ public class nameGUI extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            nameGUI frame = new nameGUI();
+            configurationGUI frame = new configurationGUI();
             frame.setVisible(true);
         });
     }

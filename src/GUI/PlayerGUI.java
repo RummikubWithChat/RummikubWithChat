@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import model.game.GamePlaying;
 import model.player.Player;
 import model.tile.*;
-import network.JavaChatServer.UserService;
+import network.Server.UserService;
 
 public class PlayerGUI extends JFrame {
 	private String username;
@@ -442,7 +442,7 @@ public class PlayerGUI extends JFrame {
                             
                             // 이전 nameGUI 창 닫기
                             for (Window window : Window.getWindows()) {
-                                if (window instanceof nameGUI) {
+                                if (window instanceof configurationGUI) {
                                     window.dispose();
                                     break;
                                 }

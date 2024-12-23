@@ -3,11 +3,11 @@ package model.tile;
 import java.util.*;
 
 import model.player.Player;
-import network.JavaChatServer;
+import network.Server;
 
 import static model.game.GameInitAndEndSet.gameEnd;
 //import static network.Server.sendToClient;
-import static network.JavaChatServer.sendToClient;
+import static network.Server.sendToClient;
 
 public class TileList {
 	//전체 타일 목록
@@ -171,8 +171,8 @@ public class TileList {
         }
 
         // 생성된 출력 내용 플레이어에게 전송
-        JavaChatServer.sendTileListToClient(player);
-        JavaChatServer.sendTileListSizeToClient();
+        Server.sendTileListToClient(player);
+        Server.sendTileListSizeToClient();
 
         System.out.print(sb.toString());
     }
