@@ -20,6 +20,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
+
 import model.tile.*;
 
 public class ClientGUI extends JFrame {
@@ -167,6 +171,18 @@ public class ClientGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // 서버로 타일 리스트의 숫자 정렬 요청
                 SendMessage("/tileSortToNumber");
+                tileShuffleSound();
+            }
+            private void tileShuffleSound() {
+                try {
+                    File soundFile = new File("assets/sounds/tileShuffle.wav");
+                    AudioInputStream audioStream = AudioSystem.getAudioInputStream(soundFile);
+                    Clip clip = AudioSystem.getClip();
+                    clip.open(audioStream);
+                    clip.start();  // 소리 재생 시작
+                } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
+                    ex.printStackTrace();  // 예외 처리
+                }
             }
         });
         buttonPanel.add(btn777);
@@ -181,6 +197,18 @@ public class ClientGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // 서버로 타일 색깔로 정렬 요청
                 SendMessage("/tileSortToColor");
+                tileShuffleSound();
+            }
+            private void tileShuffleSound() {
+                try {
+                    File soundFile = new File("assets/sounds/tileShuffle.wav");
+                    AudioInputStream audioStream = AudioSystem.getAudioInputStream(soundFile);
+                    Clip clip = AudioSystem.getClip();
+                    clip.open(audioStream);
+                    clip.start();  // 소리 재생 시작
+                } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
+                    ex.printStackTrace();  // 예외 처리
+                }
             }
         });
         buttonPanel.add(btn789);
@@ -195,6 +223,18 @@ public class ClientGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // 서버로 "p" 메시지 전송
                 SendMessage("/tilePick");
+                turnChangeSound();
+            }
+            private void turnChangeSound() {
+                try {
+                    File soundFile = new File("assets/sounds/turnChange.wav");
+                    AudioInputStream audioStream = AudioSystem.getAudioInputStream(soundFile);
+                    Clip clip = AudioSystem.getClip();
+                    clip.open(audioStream);
+                    clip.start();  // 소리 재생 시작
+                } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
+                    ex.printStackTrace();  // 예외 처리
+                }
             }
         });
         buttonPanel.add(addButton);
@@ -258,6 +298,18 @@ public class ClientGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // 서버로 "e" 메시지 전송
                 SendMessage("/end");
+                turnChangeSound();
+            }
+            private void turnChangeSound() {
+                try {
+                    File soundFile = new File("assets/sounds/turnChange.wav");
+                    AudioInputStream audioStream = AudioSystem.getAudioInputStream(soundFile);
+                    Clip clip = AudioSystem.getClip();
+                    clip.open(audioStream);
+                    clip.start();  // 소리 재생 시작
+                } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
+                    ex.printStackTrace();  // 예외 처리
+                }
             }
         });
         endButton.setEnabled(false);
@@ -272,6 +324,18 @@ public class ClientGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // 서버로 "-1" 메시지 전송
                 SendMessage("/submit");
+                checkClickSound();
+            }
+            private void checkClickSound() {
+                try {
+                    File soundFile = new File("assets/sounds/check.wav");
+                    AudioInputStream audioStream = AudioSystem.getAudioInputStream(soundFile);
+                    Clip clip = AudioSystem.getClip();
+                    clip.open(audioStream);
+                    clip.start();  // 소리 재생 시작
+                } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
+                    ex.printStackTrace();  // 예외 처리
+                }
             }
         });
         submitButton.setEnabled(false);
@@ -600,7 +664,7 @@ public class ClientGUI extends JFrame {
         } else {
             tileImage = tile.getColor().name() + "_" + tile.getNumber() + ".png";
         }
-        ImageIcon tileIcon = new ImageIcon("images/" + tileImage);
+        ImageIcon tileIcon = new ImageIcon("assets/images/" + tileImage);
         Image image = tileIcon.getImage();
 
         int originalWidth = tileIcon.getIconWidth();
@@ -638,8 +702,21 @@ public class ClientGUI extends JFrame {
                     if (tileIndex != -1) {
                     	SendMessage("/tileIndex " + tileIndex);
                     }
+                    // 효과음 재생
+                    playClickSound();
                 }
                 isSelected = !isSelected; // 상태 토글
+            }
+            private void playClickSound() {
+                try {
+                    File soundFile = new File("assets/sounds/tileClick.wav");
+                    AudioInputStream audioStream = AudioSystem.getAudioInputStream(soundFile);
+                    Clip clip = AudioSystem.getClip();
+                    clip.open(audioStream);
+                    clip.start();  // 소리 재생 시작
+                } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
+                    ex.printStackTrace();  // 예외 처리
+                }
             }
         });
 
