@@ -10,6 +10,8 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 
+import network.ClientGUI;
+
 public class configurationGUI extends JFrame {
 
     private JTextField nameField;
@@ -17,7 +19,7 @@ public class configurationGUI extends JFrame {
     private JTextField portField;
     private JButton readyButton;
 
-    private PlayerGUI playerGUI;
+    private ClientGUI playerGUI;
 
     public configurationGUI() {
         setTitle("Player Configuration");
@@ -143,7 +145,7 @@ public class configurationGUI extends JFrame {
         readyButton.setEnabled(false);
         
         // PlayerGUI 생성하고 숨기기
-        playerGUI = new PlayerGUI(username, ip_addr, port_no);
+        playerGUI = new ClientGUI(username, ip_addr, port_no);
         playerGUI.setVisible(false);
     }
 

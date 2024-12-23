@@ -1,4 +1,4 @@
-package GUI;
+package network;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -12,6 +12,9 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
+import GUI.configurationGUI;
+import GUI.startGUI;
+
 import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -19,7 +22,7 @@ import java.util.regex.Pattern;
 
 import model.tile.*;
 
-public class PlayerGUI extends JFrame {
+public class ClientGUI extends JFrame {
 	private String username;
     private JPanel contentPane;
     private JPanel tilePanel;
@@ -54,7 +57,7 @@ public class PlayerGUI extends JFrame {
     private DataInputStream dis;
     private DataOutputStream dos;
     
-    public PlayerGUI(String username, String ip_addr, String port_no) {	
+    public ClientGUI(String username, String ip_addr, String port_no) {	
     	this.username = username;
     	
         setTitle("☃⋆‧₊⊹. ︎Player ˗ " + username + " .⊹₊‧⋆☃︎");
