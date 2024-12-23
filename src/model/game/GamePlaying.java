@@ -89,7 +89,7 @@ public class GamePlaying {
         advanceTurn();
     }
     
-    private Boolean choiceCheck(String playChoice) {
+    private Boolean choiceCheck(String action) {
 
         Player player;
         if (playerTurn == 1) {
@@ -102,23 +102,25 @@ public class GamePlaying {
             player = player4;
         }
         
-        if (playChoice == null) {
+        if (action == null) {
             System.out.println("선택지가 없습니다. 다시 입력하세요.");
             return false; // 기본적으로 false를 반환하여 플레이어가 다시 시도하도록 설정
         }
 
         if (!player.isRegisterCheck) {
-        	if (playChoice.equals("p")) {
+        	if (action.equals("p")) {
                 handlePickAction(player);
                 return true;
-            } else if (playChoice.equals("end")) {
+            } else if (action.equals("end")) {
             	return true;
             }
             boardManage.generateTemporaryTileList(player, 999);
             return false;
         } else {
-            String action = playerAction(player);
-            if (action.startsWith("a")) {
+//            String action = playerAction(player);
+        	if (action.equals("end")) {
+            	return true;
+            } else if (action.startsWith("a")) {
             	// "a" 이후 숫자 추출
 	            int index;
 	            try {
@@ -141,8 +143,6 @@ public class GamePlaying {
             } else if (action.equals("p")) {
                 handlePickAction(player);
                 return true;
-            } else if (action.equals("end")) {
-            	return true;
             } else if (action.equals("-1")) {
             	return false;
             } else {

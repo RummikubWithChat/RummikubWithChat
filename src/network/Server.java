@@ -182,7 +182,7 @@ public class Server extends JFrame {
             playerToUserServiceMap.put(player, userService);   
             
             // 각 플레이어에게 게임 시작 메시지 전송
-            sendToClient(player, "Game Start!\n");
+            sendToClient(player, "/GameStart\n");
         }
         
         // 다른 플레이어들의 이름을 문자열로 결합

@@ -437,7 +437,7 @@ public class ClientGUI extends JFrame {
                         handleExitAction();
                     }
                     
-                    if (msg.equals("Game Start!\n")) {
+                    if (msg.equals("/GameStart\n")) {
                         SwingUtilities.invokeLater(() -> {
                             // PlayerGUI 보이게 하기
                             setVisible(true);

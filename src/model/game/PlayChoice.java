@@ -89,7 +89,11 @@ public class PlayChoice {
 		// 응답이 "-1"이라면 즉시 반환
 	    if (response.equals("/submit")) {
 	        return -1;
-	    } 
+	    }
+	    
+	    if (response.startsWith("/tilesort")) {
+	    	return -1;
+	    }
 
 		 if (response.startsWith("/boardindex ")) { // 이미 toLowerCase() 됨
 	        try {
@@ -120,6 +124,10 @@ public class PlayChoice {
 		// 응답이 "-1"이라면 즉시 반환
 	    if (response.equals("/submit")) {
 	        return -1;
+	    }
+	    
+	    if (response.startsWith("/tilesort")) {
+	    	return -1;
 	    }
 
 		 if (response.startsWith("/tileindex ")) {

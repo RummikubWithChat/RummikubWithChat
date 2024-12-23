@@ -412,6 +412,7 @@ public class Board {
                 LinkedList<Tile> remainingTiles = new LinkedList<>(temporaryEditTile);
                 
                 LinkedList<Tile> firstGroup = new LinkedList<>(subGroup);
+                // validGroups를 반환하기 전에 각 그룹을 정렬
                 if (isValidGroup(firstGroup)) {
                     validGroups.add(firstGroup);
                     remainingTiles.removeAll(firstGroup);
@@ -419,6 +420,10 @@ public class Board {
                     LinkedList<Tile> secondGroup = new LinkedList<>(remainingTiles);
                     if (isValidGroup(secondGroup)) {
                         validGroups.add(secondGroup);
+                        // 반환 전에 모든 그룹 정렬
+                        for (LinkedList<Tile> group : validGroups) {
+                            sortTileGroup(group);
+                        }
                         return validGroups;
                     }
                 }
