@@ -4,7 +4,7 @@ import model.board.Board;
 import model.player.Player;
 import model.tile.Tile;
 import model.tile.TileList;
-import network.JavaChatServer;
+import network.Server;
 import java.util.*;
 
 import static model.board.Board.onBoardTileList;
@@ -63,11 +63,11 @@ public class GamePlaying {
         String playChoice = "1";
         Player currentPlayer = getCurrentPlayer();
 
-        JavaChatServer.sendBoardTileListToClient();
+        Server.sendBoardTileListToClient();
         
         do {
             System.out.println("현재 턴: " + playerTurn);
-            JavaChatServer.sendIsTurnToClient(currentPlayer);
+            Server.sendIsTurnToClient(currentPlayer);
             tileListManage.tileLinkListPrint(onBoardTileList); // 보드 타일 출력 
             tileListManage.tileListPrint(currentPlayer.tileList, currentPlayer);
             
@@ -111,7 +111,7 @@ public class GamePlaying {
         	if (playChoice.equals("p")) {
                 handlePickAction(player);
                 return true;
-            } else if (playChoice.equals("e")) {
+            } else if (playChoice.equals("end")) {
             	return true;
             }
             boardManage.generateTemporaryTileList(player, 999);
@@ -141,7 +141,7 @@ public class GamePlaying {
             } else if (action.equals("p")) {
                 handlePickAction(player);
                 return true;
-            } else if (action.equals("e")) {
+            } else if (action.equals("end")) {
             	return true;
             } else if (action.equals("-1")) {
             	return false;
@@ -160,8 +160,8 @@ public class GamePlaying {
             tileListManage.tilePrint(tile);
             System.out.println("] 카드가 추가되었습니다.");
             
-            JavaChatServer.sendTileListToClient(currentPlayer);
-            JavaChatServer.sendTileListSizeToClient();
+            Server.sendTileListToClient(currentPlayer);
+            Server.sendTileListSizeToClient();
         }
     }
     

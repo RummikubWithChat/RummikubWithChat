@@ -4,7 +4,7 @@ import model.player.Player;
 import model.tile.Tile;
 import model.tile.TileColor;
 import model.tile.TileList;
-import network.JavaChatServer;
+import network.Server;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -160,7 +160,7 @@ public class Board {
         for (LinkedList<Tile> tiles : turnCheckCompleteTileList) {
             player.tileList.addAll(tiles);
         }
-        JavaChatServer.sendTileListToClient(player);
+        Server.sendTileListToClient(player);
 
         turnCheckCompleteTileList = new ArrayList<>(106);
         onBoardTileSum = 0;
@@ -195,7 +195,7 @@ public class Board {
                     if (!temporaryTile.isEmpty()) {
                         temporaryTileList.add(temporaryTile);
                     }
-                    JavaChatServer.sendTemporaryTileListToClient();
+                    Server.sendTemporaryTileListToClient();
                 }
                 
                 tileManage.tileListPrint(player.tileList, player);
@@ -218,12 +218,12 @@ public class Board {
             // 최종 결과 갱신
             temporaryTileList.clear();
             temporaryTileList.addAll(onBoardTileList);
-            JavaChatServer.sendTemporaryTileListToClient();
+            Server.sendTemporaryTileListToClient();
         } else {
             player.tileList.addAll(temporaryTile);
             temporaryTileList.clear();
             temporaryTileList.addAll(onBoardTileList);
-            JavaChatServer.sendTemporaryTileListToClient();
+            Server.sendTemporaryTileListToClient();
         }        
         temporaryTile = new LinkedList<Tile>();
     }
@@ -348,7 +348,7 @@ public class Board {
                             temporaryEditTile.add(player.tileList.get(result));
                             temporaryTile.add(player.tileList.get(result));
                             player.tileList.remove(result);
-                            JavaChatServer.sendTileListToClient(player);
+                            Server.sendTileListToClient(player);
                             
                             // 타일이 추가될 때마다 temporaryTileList 갱신
                             System.out.println("temporaryEditTile: " + temporaryEditTile);
@@ -359,7 +359,7 @@ public class Board {
                                 temporaryTileList.remove(index);
                                 temporaryTileList.add(temporaryEditTile);
                             }
-                            JavaChatServer.sendTemporaryTileListToClient();
+                            Server.sendTemporaryTileListToClient();
                         }
                     } catch (NumberFormatException e) {
                         System.out.println("숫자를 입력해야 합니다. 다시 입력하세요.");
@@ -380,14 +380,14 @@ public class Board {
                     // 최종 결과 갱신
                     temporaryTileList.clear();
                     temporaryTileList.addAll(onBoardTileList);
-                    JavaChatServer.sendTemporaryTileListToClient();
+                    Server.sendTemporaryTileListToClient();
                 } else {
                     // 실패 시 tileList 재설정, temporaryTileList 재설정
                     player.tileList.addAll(temporaryTile);
-                    JavaChatServer.sendTileListToClient(player);
+                    Server.sendTileListToClient(player);
                     temporaryTileList.clear();
                     temporaryTileList.addAll(onBoardTileList);
-                    JavaChatServer.sendTemporaryTileListToClient();
+                    Server.sendTemporaryTileListToClient();
                 }        
                 temporaryTile = new LinkedList<Tile>();
                 temporaryEditTile = new LinkedList<Tile>();

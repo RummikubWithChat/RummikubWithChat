@@ -129,7 +129,9 @@ public class howToPlay extends JFrame {
             doc.insertString(doc.getLength(), "9. 특별 규칙\n", titleStyle);
             StyleConstants.setBold(titleStyle, false);
             StyleConstants.setFontSize(titleStyle, 16); // 기본 글자 크기
-            doc.insertString(doc.getLength(), "- 조커: 다른 숫자나 색상을 대신할 수 있는 특별 타일입니다.\n\n", style);
+            doc.insertString(doc.getLength(), "- 조커: 다른 숫자나 색상을 대신할 수 있는 특별 타일입니다.\n", style);
+            doc.insertString(doc.getLength(), "- **주의** 원하는 행동의 버튼을 눌러도 작동되지 않을 시 만능 버튼 >>'✓'<<을 눌러주세요!\n\n", style);
+
             
             // 10. 채팅 기능
             StyleConstants.setBold(titleStyle, true);

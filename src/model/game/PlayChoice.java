@@ -1,7 +1,7 @@
 package model.game;
 
 import model.player.Player;
-import network.JavaChatServer;
+import network.Server;
 import model.game.GamePlaying;
 import static model.board.Board.onBoardTileList;
 
@@ -9,14 +9,14 @@ public class PlayChoice {
 
     // 클라이언트에게 메시지 전송
     public static void sendToClient(Player player, String message) {
-    	JavaChatServer.sendToClient(player, message);
+    	Server.sendToClient(player, message);
     }
 
     // 카드 리스트 생성/추가
     public static String playerAction(Player player) {
         System.out.print("\n새로운 카드리스트 생성 : A or a / 기존 리스트에 추가 : E or e :: ");
         sendToClient(player, "\n새로운 카드리스트 생성 : A or a / 기존 리스트에 추가 : E or e :: ");
-        String response = JavaChatServer.getInputFromPlayer(player);
+        String response = Server.getInputFromPlayer(player);
         
         System.out.println("response: " + response);
         
@@ -64,10 +64,10 @@ public class PlayChoice {
             } catch (NumberFormatException e) {
                 sendToClient(player, "인덱스는 숫자여야 합니다. 다시 시도하세요.");
             }
-        } else if (response.equals("/tilePick")) {
+        } else if (response.equals("/tilepick")) {
             return "p";
         } else if (response.equals("/end")) {
-            return "e";
+            return "end";
         } else if (response.equals("/submit")) {
             return "-1";
         } else {
@@ -84,12 +84,12 @@ public class PlayChoice {
         System.out.print("인덱스를 고르세요. (0~" + (onBoardTileList.size() - 1) + ") : ");
         sendToClient(player, "인덱스를 고르세요. (0~" + (onBoardTileList.size() - 1) + ") : ");
         
-        String response = JavaChatServer.getInputFromPlayer(player);
+        String response = Server.getInputFromPlayer(player);
 		 
 		// 응답이 "-1"이라면 즉시 반환
-	    if (response.equals("-1")) {
+	    if (response.equals("/submit")) {
 	        return -1;
-	    }
+	    } 
 
 		 if (response.startsWith("/boardindex ")) { // 이미 toLowerCase() 됨
 	        try {
@@ -115,10 +115,10 @@ public class PlayChoice {
 		 System.out.print("인덱스를 고르세요, 완료하려면 -1을 입력하세요. (0~" + (player.tileList.size() - 1) + ") : ");
 		 sendToClient(player, "인덱스를 고르세요, 완료하려면 -1을 입력하세요. (0~" + (player.tileList.size() - 1) + ") : ");
 		 
-		 String response = JavaChatServer.getInputFromPlayer(player);
+		 String response = Server.getInputFromPlayer(player);
 		 
 		// 응답이 "-1"이라면 즉시 반환
-	    if (response.equals("-1")) {
+	    if (response.equals("/submit")) {
 	        return -1;
 	    }
 

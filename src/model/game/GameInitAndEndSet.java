@@ -3,7 +3,7 @@ package model.game;
 import model.player.Player;
 import model.tile.Tile;
 import model.tile.TileList;
-import network.JavaChatServer;
+import network.Server;
 
 import java.util.*;
 
@@ -24,9 +24,9 @@ public class GameInitAndEndSet {
         
         // 타일 리스트를 각 클라이언트에 전달
         for (Player player : players) {
-        	JavaChatServer.sendTileListToClient(player);  // 각 플레이어에게 타일 리스트 전송
+        	Server.sendTileListToClient(player);  // 각 플레이어에게 타일 리스트 전송
         }
-        JavaChatServer.sendTileListSizeToClient();
+        Server.sendTileListSizeToClient();
     }
 
     // 게임 종료 조건 체크
@@ -71,27 +71,27 @@ public class GameInitAndEndSet {
     public static void gameEnd(int gameEndStatus) {
         if(gameEndStatus == 1){
             System.out.println("플레이어 1이 이겼습니다. 게임이 종료되었습니다.");
-            JavaChatServer.sendGameOverToClient(1);
+            Server.sendGameOverToClient(1);
         }
 
         else if(gameEndStatus == 2){
             System.out.println("플레이어 2가 이겼습니다. 게임이 종료되었습니다.");
-            JavaChatServer.sendGameOverToClient(2);
+            Server.sendGameOverToClient(2);
         }
         
         else if(gameEndStatus == 3){
             System.out.println("플레이어 3이 이겼습니다. 게임이 종료되었습니다.");
-            JavaChatServer.sendGameOverToClient(3);
+            Server.sendGameOverToClient(3);
         }
         
         else if(gameEndStatus == 4){
             System.out.println("플레이어 4가 이겼습니다. 게임이 종료되었습니다.");
-            JavaChatServer.sendGameOverToClient(4);
+            Server.sendGameOverToClient(4);
         }
 
         else if (gameEndStatus == 5){
             System.out.println("카드 전체가 빠져서 무승부 처리되었습니다.");
-            JavaChatServer.sendGameOverToClient(-1);
+            Server.sendGameOverToClient(-1);
         }
     }
 }
