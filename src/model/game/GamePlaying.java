@@ -73,7 +73,7 @@ public class GamePlaying {
             tileListManage.tileLinkListPrint(onBoardTileList); // 보드 타일 출력 
             tileListManage.tileListPrint(currentPlayer.tileList, currentPlayer);
             
-            playChoice = pickOrShow(currentPlayer);
+            playChoice = cardListAddOrEdit(currentPlayer);
             turnComplete = choiceCheck(playChoice);
             
             if (isSelectedOnTileList) {
@@ -88,12 +88,12 @@ public class GamePlaying {
         } while (!turnComplete);
 
         // 다음 턴으로 넘기기
-        if ((Objects.equals(playChoice, "p")) || (Objects.equals(playChoice, "P"))) {
-            advanceTurn();
-        } else {
+//        if ((Objects.equals(playChoice, "p")) || (Objects.equals(playChoice, "P"))) {
+//            advanceTurn();
+//        } else {
             boardManage.turnChanged(currentPlayer);
             advanceTurn();
-        }
+//        }
     }
     
     private Boolean choiceCheck(String playChoice) {
@@ -118,35 +118,44 @@ public class GamePlaying {
             playerName = player4.name;
             player = player4;
         }
-
-        // 카드 가져오기 (p)
-        if (Objects.equals(playChoice, "p") || Objects.equals(playChoice, "P")) {
-            handlePickAction(player);           
-            return true;
-        }
-
-        // 숫자 기준으로 정렬 (n)
-        else if (Objects.equals(playChoice, "n") || Objects.equals(playChoice, "N")) {
-            tileListManage.tileSortToNumber(playerList);
-            return false;
-        }
         
-        // 색깔 기준으로 정렬 (c)
-        else if (Objects.equals(playChoice, "c") || Objects.equals(playChoice, "C")) {
-            tileListManage.tileSortToColor(playerList);
-            return false;
+        if (playChoice == null) {
+            System.out.println("선택지가 없습니다. 다시 입력하세요.");
+            return false; // 기본적으로 false를 반환하여 플레이어가 다시 시도하도록 설정
         }
+
+//        // 카드 가져오기 (p)
+//        if (Objects.equals(playChoice, "p") || Objects.equals(playChoice, "P")) {
+//            handlePickAction(player);           
+//            return true;
+//        }
+//
+//        // 숫자 기준으로 정렬 (n)
+//        else if (Objects.equals(playChoice, "n") || Objects.equals(playChoice, "N")) {
+//            tileListManage.tileSortToNumber(playerList);
+//            return false;
+//        }
+//        
+//        // 색깔 기준으로 정렬 (c)
+//        else if (Objects.equals(playChoice, "c") || Objects.equals(playChoice, "C")) {
+//            tileListManage.tileSortToColor(playerList);
+//            return false;
+//        }
 
         // 카드 내기 (s)
-        else if (Objects.equals(playChoice, "s") || Objects.equals(playChoice, "S")) {
+//        else if (Objects.equals(playChoice, "s") || Objects.equals(playChoice, "S")) {
             if (!player.isRegisterCheck) {
-                if(Objects.equals(playChoice, "p") || Objects.equals(playChoice, "P")) {
+            	if (playChoice.equals("p")) {
                     handlePickAction(player);
                     return true;
+                } else if (playChoice.equals("e")) {
+                	return true;
                 }
                 boardManage.generateTemporaryTileList(player, 999);
+                return false;
             } else {
                 String choiceAddOrEdit = cardListAddOrEdit(player);
+                System.out.println("choiceAddOrEdit" + choiceAddOrEdit);
 //                if (Objects.equals(choiceAddOrEdit, "a") || Objects.equals(choiceAddOrEdit, "A")
 //                		|| isSelectedOnTileList == true) {
 //                    boardManage.generateTemporaryTileList(player);
@@ -164,6 +173,7 @@ public class GamePlaying {
     	            	index = 999; // 유효하지 않은 값 넘겨 generateTemporaryTileList에서 처리하도록
     	            }
                     boardManage.generateTemporaryTileList(player, index);
+                    return false;
                 } else if (choiceAddOrEdit.startsWith("e")) {
                 	// "e" 이후 숫자 추출
     	            int index;
@@ -173,20 +183,26 @@ public class GamePlaying {
     	            	index = 999; // 유효하지 않은 값 넘겨 generateTemporaryTileList에서 처리하도록
     	            }
                     boardManage.editOnBoardTileList(player, index);
-                } else if (Objects.equals(choiceAddOrEdit, "p") || Objects.equals(choiceAddOrEdit, "P")) {
+                    return false;
+                } else if (choiceAddOrEdit.equals("p")) {
                     handlePickAction(player);
                     return true;
+                } else if (choiceAddOrEdit.equals("e")) {
+                	return true;
+                } else {
+                  System.out.println("잘못된 선택지입니다. 다시 입력하세요.");
+                	return false;
                 }
             }
-            
-            return false;
-        } else if (Objects.equals(playChoice, "e") || Objects.equals(playChoice, "E")) {
-            return true; //턴 종료 
-        } else {
-            System.out.println("잘못된 선택지입니다. 다시 입력하세요.");
-            pickOrShow(player);
-            return false;
-        }
+//            
+//            return false;
+//        } else if (Objects.equals(playChoice, "e") || Objects.equals(playChoice, "E")) {
+//            return true; //턴 종료 
+//        } else {
+//            System.out.println("잘못된 선택지입니다. 다시 입력하세요.");
+//            pickOrShow(player);
+//            return false;
+//        }
     }
     
     // 타일 가져오기 액션 (P)

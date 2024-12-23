@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static model.game.PlayChoice.*;
 
@@ -70,17 +71,19 @@ public class Board {
         if (!player.isRegisterCheck) {
             for (LinkedList<Tile> tiles : turnCheckCompleteTileList) {
                 for (Tile tile : tiles) {
-                    onBoardTileSum += tile.number;
+                    int tileValue = tile.number == 999 ? getJokerValue(tiles) : tile.number;
+                    System.out.println("타일 값: " + tileValue);
+                    onBoardTileSum += tileValue;
                 }
             }
 
             if (onBoardTileSum >= 30) {
                 player.isRegisterCheck = true;
-                System.out.println("카드의 총 합이 30을 넘어, 등록이 완료되었습니다!");
+                System.out.println("카드의 총 합이 " + onBoardTileSum + "으로, 등록이 완료되었습니다!");
                 return true;
             } else {
                 if(!Objects.equals(player.name, "ai") && !Objects.equals(player.name, "AI"))
-                    System.out.println("기존에 등록이 진행되지 않았고, 낸 카드의 합이 30 미만입니다.");
+                    System.out.println("기존에 등록이 진행되지 않았고, 낸 카드의 합이 " + onBoardTileSum + "으로 30 미만입니다.");
                 return false;
             }
         }
@@ -88,16 +91,78 @@ public class Board {
         return true;
     }
 
+    private int getJokerValue(LinkedList<Tile> tiles) {
+        int jokerIndex = -1;
+
+        // 조커가 들어있는 위치를 찾음
+        for (int i = 0; i < tiles.size(); i++) {
+            if (tiles.get(i).number == 999) {
+                jokerIndex = i;
+                break;
+            }
+        }
+
+        if (jokerIndex == -1) {
+            return 0; // 조커가 없을 경우
+        }
+
+        Tile prevTile = jokerIndex > 0 ? tiles.get(jokerIndex - 1) : null;
+        Tile nextTile = jokerIndex < tiles.size() - 1 ? tiles.get(jokerIndex + 1) : null;
+
+        // 연속된 숫자 패턴 확인
+        boolean isSameColor = true;
+        int expectedValue = 0;
+
+        if (tiles.size() >= 3) {
+            // 색상이 모두 같은지 확인 (조커 제외)
+            TileColor baseColor = null;
+            for (Tile tile : tiles) {
+                if (tile.number != 999) {
+                    if (baseColor == null) {
+                        baseColor = tile.color;
+                    } else if (tile.color != baseColor) {
+                        isSameColor = false;
+                        break;
+                    }
+                }
+            }
+
+            if (isSameColor) {
+                // 연속된 숫자 패턴
+                if (prevTile != null && nextTile != null) {
+                    // 조커가 중간에 있는 경우
+                    expectedValue = (prevTile.number + nextTile.number) / 2;
+                } else if (prevTile != null) {
+                    // 조커가 끝에 있는 경우
+                    expectedValue = prevTile.number + 1;
+                } else if (nextTile != null) {
+                    // 조커가 처음에 있는 경우
+                    expectedValue = nextTile.number - 1;
+                }
+            } else {
+                // 같은 숫자 패턴
+                for (Tile tile : tiles) {
+                    if (tile.number != 999) {
+                        expectedValue = tile.number;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return expectedValue;
+    }
+
     public void turnIsFailed(Player player) {
         System.out.println("조건이 충족되지 않았으므로, 기존 배열로 돌아갑니다.");
 
         // 보드를 다시 되돌리기 (조건 충족X)
         onBoardTileList.removeAll(turnCheckCompleteTileList);
-//        onBoardTileList.addAll(previousTileList);
 
         for (LinkedList<Tile> tiles : turnCheckCompleteTileList) {
             player.tileList.addAll(tiles);
         }
+        JavaChatServer.sendTileListToClient(player);
 
         turnCheckCompleteTileList = new ArrayList<>(106);
         onBoardTileSum = 0;
@@ -168,42 +233,87 @@ public class Board {
     public Boolean generateTempCheck(Player player) {
         int size = temporaryTile.size();
 
+        // 타일 개수가 3개 미만이면 유효하지 않음
         if (size < 3) {
             System.out.println("임시 배열의 카드가 3개 미만입니다. 등록에 실패하였습니다.");
             return false;
         }
 
-        Boolean sameNumber = false;
-        int numberStack = 0;
+        System.out.print("현재 검사 중인 임시 배열: ");
+        tileManage.tileLinkPrint(temporaryTile);
 
-        Boolean sameColor = false;
-        int colorStack = 0;
+        int jokerCount = 0;
+        List<Tile> nonJokerTiles = new ArrayList<>();
 
-        for (int i = 0; i < size - 1; i++) {
-            if ((temporaryTile.get(i).number == temporaryTile.get(i + 1).number - 1) && (temporaryTile.get(i).color == temporaryTile.get(i + 1).color)) {
-                colorStack += 1;
-            }
-
-            if ((temporaryTile.get(i).number == temporaryTile.get(i + 1).number) && (temporaryTile.get(i).color != temporaryTile.get(i + 1).color)) {
-                numberStack += 1;
-            }
-
-            if (temporaryTile.get(i).number == 999 || temporaryTile.get(i + 1).number == 999) {
-                colorStack += 1;
-                numberStack += 1;
+        // 조커와 비조커 타일 분리
+        for (Tile tile : temporaryTile) {
+            if (tile.number == 999) {
+                jokerCount++;
+            } else {
+                nonJokerTiles.add(tile);
             }
         }
 
-        if (size - 1 == colorStack) {
+        // 비조커 타일들의 패턴 확인
+        if (nonJokerTiles.isEmpty()) {
+            System.out.println("모든 타일이 조커입니다.");
             return true;
-        } else if (size - 1 == numberStack) {
-            return true;
-        } else {
-            System.out.println("색깔이나 숫자가 연속되지 않았습니다. 등록에 실패하였습니다.");
+        }
+
+        // 연속된 숫자 패턴인지 체크
+        boolean isConsecutivePattern = checkConsecutivePattern(nonJokerTiles, jokerCount);
+        // 같은 숫자 패턴인지 체크
+        boolean isSameNumberPattern = checkSameNumberPattern(nonJokerTiles, jokerCount);
+
+        if (!isConsecutivePattern && !isSameNumberPattern) {
+            System.out.println("유효하지 않은 타일 배치입니다.");
             return false;
         }
+
+        System.out.println("타일이 유효합니다.");
+        return true;
     }
 
+    private boolean checkConsecutivePattern(List<Tile> nonJokerTiles, int jokerCount) {
+        if (nonJokerTiles.isEmpty()) return false;
+        
+        // 숫자로 정렬
+        nonJokerTiles.sort(Comparator.comparingInt(tile -> tile.number));
+        
+        // 같은 색상인지 확인
+        TileColor color = nonJokerTiles.get(0).color;
+        boolean sameColor = nonJokerTiles.stream().allMatch(tile -> tile.color == color);
+        if (!sameColor) return false;
+
+        // 연속된 숫자인지 확인 (조커 고려)
+        int gaps = 0; // 연속되지 않은 간격의 합
+        for (int i = 1; i < nonJokerTiles.size(); i++) {
+            int gap = nonJokerTiles.get(i).number - nonJokerTiles.get(i-1).number - 1;
+            if (gap < 0) return false; // 잘못된 순서
+            gaps += gap;
+        }
+
+        // 조커로 채울 수 있는지 확인
+        return gaps <= jokerCount;
+    }
+
+    private boolean checkSameNumberPattern(List<Tile> nonJokerTiles, int jokerCount) {
+        if (nonJokerTiles.isEmpty()) return false;
+
+        // 같은 숫자인지 확인
+        int firstNumber = nonJokerTiles.get(0).number;
+        boolean sameNumber = nonJokerTiles.stream().allMatch(tile -> tile.number == firstNumber);
+        if (!sameNumber) return false;
+
+        // 서로 다른 색상인지 확인
+        Set<TileColor> colors = nonJokerTiles.stream()
+            .map(tile -> tile.color)
+            .collect(Collectors.toSet());
+        
+        // 색상이 중복되지 않아야 함
+        return colors.size() == nonJokerTiles.size();
+    }
+    
     public void editOnBoardTileList(Player player, int startIndex) {
         int result = 0;
 

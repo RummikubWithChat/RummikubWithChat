@@ -32,7 +32,16 @@ public class PlayChoice {
         sendToClient(player, "\n새로운 카드리스트 생성 : A or a / 기존 리스트에 추가 : E or e :: ");
         String response = JavaChatServer.getInputFromPlayer(player);
         
+        System.out.println("response: " + response);
+        
+        // response가 null인 경우 처리
+        if (response == null) {
+            sendToClient(player, "응답이 없습니다. 다시 시도해주세요.");
+            return null; // 혹은 특정 값을 반환하거나 재시도 로직을 구현
+        }
+        
         if (response.startsWith("/tileindex ")) {
+            System.out.println("a: " + response);
             try {
                 // "/tileIndex" 이후 숫자 추출
                 String[] parts = response.split("\\s+");
@@ -51,6 +60,7 @@ public class PlayChoice {
                 sendToClient(player, "인덱스는 숫자여야 합니다. 다시 시도하세요.");
             }
         } else if (response.startsWith("/boardindex")) {
+            System.out.println("e: " + response);
             try {
                 // "/boardIndex" 이후 숫자 추출
                 String[] parts = response.split("\\s+");
@@ -68,11 +78,19 @@ public class PlayChoice {
             } catch (NumberFormatException e) {
                 sendToClient(player, "인덱스는 숫자여야 합니다. 다시 시도하세요.");
             }
+        } else if (response.equals("p")) {
+            sendToClient(player, "pass 시도 : " + response);
+            return "p";
+        } else if (response.equals("e")) {
+            sendToClient(player, "exit 시도 : " + response);
+            return "e";
         } else {
+            System.out.println("잘못된 명령어: " + response);
             sendToClient(player, "잘못된 명령어입니다.");
             return response;
         }
         return null; // 유효하지 않은 입력일 경우 null 반환
+
     }
 
     // 배열 수정/배열 나누기/완료 처리 선택
