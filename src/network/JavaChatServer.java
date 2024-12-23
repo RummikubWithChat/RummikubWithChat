@@ -1,5 +1,3 @@
-//JavaChatServer.java
-//Java Chatting Server
 package network;
 
 import java.awt.EventQueue;
@@ -35,10 +33,6 @@ import model.game.GamePlaying;
 import static model.game.GameInitAndEndSet.gameInitSetting;
 
 public class JavaChatServer extends JFrame {
-
-    /**
-     * 
-     */
     private static JavaChatServer instance; // 싱글톤 인스턴스
     private AcceptServer acceptServer; // AcceptServer 인스턴스 저장을 위한 필드 추가
 	

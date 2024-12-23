@@ -9,11 +9,9 @@ import network.JavaChatServer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -595,55 +593,6 @@ public class Board {
         }
         
         return (colors.size() + jokerCount) >= 3;
-    }
-
-    private boolean workChecking(int index, int detailIndex, int result, Player player) {
-        // 숫자가 같은 경우, 색깔이 달라야 함
-        if (isNumSameAndColorDiffer(index, detailIndex, result, player)) {
-            return true;
-        }
-
-        // 색깔이 같은 경우, 숫자가 달라야 함
-        else if (isNumDifferAndColorSame(index, detailIndex, result, player)) {
-            return true;
-        }
-
-        else if (player.tileList.get(result).number == 999) {
-            return true;
-        }
-
-        else {
-            System.out.println("해당 요소는 해당 위치에 들어갈 수 없습니다.");
-            return false;
-        }
-    }
-
-    private boolean isNumSameAndColorDiffer(int index, int detailIndex, int result, Player player){
-        return (onBoardTileList.get(index).get(detailIndex).number == player.tileList.get(result).number) &&
-                (onBoardTileList.get(index).get(detailIndex).color != player.tileList.get(result).color);
-    }
-
-    private boolean isNumDifferAndColorSame(int index, int detailIndex, int result, Player player){
-        return ((onBoardTileList.get(index).get(detailIndex).number == player.tileList.get(result).number + 1)
-                || (onBoardTileList.get(index).get(detailIndex).number == player.tileList.get(result).number - 1))
-                && (onBoardTileList.get(index).get(detailIndex).color == player.tileList.get(result).color);
-    }
-
-    private boolean splitCheck(int index, int detailIndex, Player player) {
-        // 온보딩의 사이즈가 3이 넘는 지 확인, 왼쪽 오른쪽 기준으로 3이 넘는지 확인
-        if (onBoardTileList.get(index).size() > 3) {
-            if(onBoardTileList.get(detailIndex - 3) != null && onBoardTileList.get(detailIndex + 3) != null){
-                return true;
-            }
-
-            else {
-                System.out.println("타일을 구분 시, 좌/우로 3개가 남지 않으므로 구분이 불가능합니다.");
-                return false;
-            }
-        } else {
-            System.out.println("타일이 3개 이하이므로, 타일 구분이 불가능합니다.");
-            return false;
-        }
     }
 
     public void splitOnBoardTileList(Player player, int index, int detailIndex) {

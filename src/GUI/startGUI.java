@@ -32,7 +32,7 @@ public class startGUI extends JFrame {
         startButton.setBounds(225, 350, 150, 50); // x, y, width, height
         startButton.addActionListener((ActionEvent e) -> {
             // PlayerGUI로 전환
-            new nameGUI().setVisible(true);
+            new configurationGUI().setVisible(true);
             // 현재 창 숨기기 또는 닫기
             this.dispose();
         });

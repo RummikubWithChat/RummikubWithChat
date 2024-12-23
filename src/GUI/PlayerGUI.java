@@ -1,9 +1,6 @@
 package GUI;
 
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -11,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.awt.dnd.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -21,10 +17,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import model.game.GamePlaying;
-import model.player.Player;
 import model.tile.*;
-import network.JavaChatServer.UserService;
 
 public class PlayerGUI extends JFrame {
 	private String username;
@@ -33,7 +26,6 @@ public class PlayerGUI extends JFrame {
     private JPanel boardPanel;
     private JPanel tileCountPanel;
     private JLabel nicknameLabel;
-    private JLabel timeLabel;
     private JLabel tileCountLabel;
     
     private JButton endButton;
@@ -44,19 +36,10 @@ public class PlayerGUI extends JFrame {
     private JPanel otherPlayersPanel = new JPanel();
     private List<String> otherPlayersName = new ArrayList<>();
     private List<String> otherPlayersTileCount = new ArrayList<>(Arrays.asList("14", "14", "14"));
-    private int[] otherPlayersTime = {30, 30, 30};
     private int turnIndex;
 
     private List<Tile> tileList = new ArrayList<>();
-//    private List<Tile> boardTileList = new ArrayList<>();  // 보드 패널에 있는 타일 리스트
-//    private ArrayList<LinkedList<Tile>> boardLinkedTileList = new ArrayList<>();
-    
-    private ArrayList<LinkedList<Tile>> onBoardTileList = new ArrayList<>(106);
-    private ArrayList<LinkedList<Tile>> turnCheckCompleteTileList = new ArrayList<>(106);
-    private ArrayList<LinkedList<Tile>> previousTileList = new ArrayList<>(106);
-    private ArrayList<LinkedList<Tile>> playerPutTileList = new ArrayList<>(106);
-
-    private LinkedList<Tile> temporaryTile = new LinkedList<Tile>();
+    private ArrayList<LinkedList<Tile>> boardTileList = new ArrayList<>(106);
     
     // 채팅 관련 변수들
     private JTextArea chatArea;
@@ -91,59 +74,11 @@ public class PlayerGUI extends JFrame {
         otherPlayersPanel.setPreferredSize(new Dimension(130, getHeight()));
         contentPane.add(otherPlayersPanel, BorderLayout.WEST);
 
-        // 보드 패널 설정 (드래그 앤 드롭 가능)
+        // 보드 패널 설정
         boardPanel = new JPanel();
         boardPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
         boardPanel.setBackground(new Color(25, 25, 100));
-        boardPanel.setTransferHandler(new BoardPanelTransferHandler());
-        boardPanel.setDropTarget(new DropTarget() {
-            @Override
-            public synchronized void drop(DropTargetDropEvent dtde) {
-                try {
-                    Transferable transferable = dtde.getTransferable();
-                    Tile droppedTile = (Tile) transferable.getTransferData(TileTransferable.TILE_FLAVOR);
-
-                    boolean isTileAlreadyInBoard = false;
-                    LinkedList<Tile> targetGroup = null;
-
-                    // 보드 타일 리스트를 순회하여 타일이 이미 있는지 확인
-                    for (LinkedList<Tile> group : previousTileList) {
-                        if (group.contains(droppedTile)) {
-                            isTileAlreadyInBoard = true;
-                            targetGroup = group;
-                            break;
-                        }
-                    }
-
-                    if (isTileAlreadyInBoard && targetGroup != null) {
-                        // 보드 그룹 내에서 타일의 현재 위치를 찾아 마지막으로 이동
-                        targetGroup.remove(droppedTile);
-                        targetGroup.addLast(droppedTile);
-                    } else {
-                        // 타일 패널에서 보드 패널로 처음 드래그되는 경우
-                        // 새로운 그룹을 만들어 추가
-                        tileList.remove(droppedTile);
-
-                        LinkedList<Tile> newGroup = new LinkedList<>();
-                        newGroup.add(droppedTile);
-                        previousTileList.add(newGroup);
-                    }
-
-                    // 보드 패널 업데이트
-                    updateBoardPanel(previousTileList);
-
-                    // 타일 패널 업데이트
-                    updateTilePanel();
-
-                    dtde.acceptDrop(DnDConstants.ACTION_MOVE);
-                    dtde.dropComplete(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    dtde.rejectDrop();
-                }
-            }
-        });
-
+        updateBoardPanel(boardTileList);
         
         // 화면 가로, 세로 크기 구하기
         int screenWidth = getWidth();  // 화면의 가로 길이
@@ -174,7 +109,7 @@ public class PlayerGUI extends JFrame {
 
         nicknameLabel = new JLabel(username);
         nicknameLabel.setForeground(Color.WHITE);
-        nicknameLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        nicknameLabel.setFont(new Font("Arial", Font.BOLD, 20));
         playerPanel.add(nicknameLabel, BorderLayout.NORTH);
         
         // 하단 정보 표시를 위한 패널 추가
@@ -256,7 +191,7 @@ public class PlayerGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 서버로 "p" 메시지 전송
-                SendMessage("p");
+                SendMessage("/tilePick");
             }
         });
         buttonPanel.add(addButton);
@@ -319,7 +254,7 @@ public class PlayerGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 서버로 "e" 메시지 전송
-                SendMessage("e");
+                SendMessage("/end");
             }
         });
         endButton.setEnabled(false);
@@ -333,7 +268,7 @@ public class PlayerGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 서버로 "-1" 메시지 전송
-                SendMessage("-1");
+                SendMessage("/submit");
             }
         });
         submitButton.setEnabled(false);
@@ -442,7 +377,7 @@ public class PlayerGUI extends JFrame {
                             
                             // 이전 nameGUI 창 닫기
                             for (Window window : Window.getWindows()) {
-                                if (window instanceof nameGUI) {
+                                if (window instanceof configurationGUI) {
                                     window.dispose();
                                     break;
                                 }
@@ -457,6 +392,7 @@ public class PlayerGUI extends JFrame {
                         addButton.setEnabled(true);
                         turnIndex = -1;
                         nicknameLabel.setForeground(Color.YELLOW);
+                        tileCountLabel.setForeground(Color.YELLOW);
                     } else if (msg.startsWith("/otherTurn ")){ // 내 차례가 아닐 때
                 		submitButton.setEnabled(false);
                         endButton.setEnabled(false);
@@ -736,99 +672,7 @@ public class PlayerGUI extends JFrame {
         public boolean isBorderOpaque() {
             return false; // 투명한 테두리
         }
-    }
-
-    private void updateTilePanel() {
-        tilePanel.removeAll();
-        for (Tile tile : tileList) {
-            JLabel tileLabel = createTileLabel(tile);
-            tilePanel.add(tileLabel);
-        }
-        tilePanel.revalidate();
-        tilePanel.repaint();
-    }
-
-    // 타일 TransferHandler
-    private static class TileLabelTransferHandler extends TransferHandler {
-        private Tile tile;
-
-        public TileLabelTransferHandler(Tile tile) {
-            this.tile = tile;
-        }
-
-        @Override
-        public int getSourceActions(JComponent c) {
-            return MOVE;
-        }
-
-        @Override
-        protected Transferable createTransferable(JComponent c) {
-            return new TileTransferable(tile);
-        }
-    }
-
-    // 타일 Transferable
-    private static class TileTransferable implements Transferable {
-        public static final DataFlavor TILE_FLAVOR = 
-            new DataFlavor(Tile.class, "Tile");
-        
-        private Tile tile;
-
-        public TileTransferable(Tile tile) {
-            this.tile = tile;
-        }
-
-        @Override
-        public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{TILE_FLAVOR};
-        }
-
-        @Override
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return flavor.equals(TILE_FLAVOR);
-        }
-
-        @Override
-        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-            if (!isDataFlavorSupported(flavor)) {
-                throw new UnsupportedFlavorException(flavor);
-            }
-            return tile;
-        }
-    }
-
-    // 보드 패널 TransferHandler
-    private class BoardPanelTransferHandler extends TransferHandler {
-        @Override
-        public boolean canImport(TransferSupport support) {
-            return support.isDataFlavorSupported(TileTransferable.TILE_FLAVOR);
-        }
-
-        @Override
-        public boolean importData(TransferSupport support) {
-            try {
-                Transferable transferable = support.getTransferable();
-                Tile droppedTile = (Tile) transferable.getTransferData(TileTransferable.TILE_FLAVOR);
-                
-                // 타일 패널에서 해당 타일 제거
-                tileList.remove(droppedTile);
-                
-                // 새로운 그룹 생성
-                LinkedList<Tile> newGroup = new LinkedList<>();
-                newGroup.add(droppedTile);
-                previousTileList.add(newGroup);
-                
-                // 패널 업데이트
-                updateTilePanel();
-                updateBoardPanel(previousTileList);
-                
-                return true;
-            } catch (UnsupportedFlavorException | IOException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-    }
+    }    
     
     // 타일 패널 업데이트
     public void updateTilePanel(List<Tile> newTileList) {
@@ -853,13 +697,13 @@ public class PlayerGUI extends JFrame {
     public void updateBoardPanel(List<LinkedList<Tile>> newBoardTileList) {
         boardPanel.removeAll(); // 기존 UI 삭제
     
-        previousTileList.clear();
-        previousTileList.addAll(newBoardTileList);
+        boardTileList.clear();
+        boardTileList.addAll(newBoardTileList);
     
-        System.out.println("boardLinkedTileList: " + previousTileList);
+        System.out.println("boardLinkedTileList: " + boardTileList);
     
-        for (int groupIndex = 0; groupIndex < previousTileList.size(); groupIndex++) {
-            LinkedList<Tile> group = previousTileList.get(groupIndex);
+        for (int groupIndex = 0; groupIndex < boardTileList.size(); groupIndex++) {
+            LinkedList<Tile> group = boardTileList.get(groupIndex);
             System.out.println("group: " + group);
     
             for (int tileIndex = 0; tileIndex < group.size(); tileIndex++) {
@@ -883,7 +727,8 @@ public class PlayerGUI extends JFrame {
                             SendMessage("/boardIndex " + boardIndex);
                         }
                     });
-    
+                    
+                    tileLabel.setBorder(new RoundedBorder(20, new Color(25, 25, 112), 2));
                     boardPanel.add(tileLabel);
                 } else {
                     System.out.println("Warning: Null tile label for tile: " + tile);
@@ -919,9 +764,6 @@ public class PlayerGUI extends JFrame {
         // 다른 플레이어 정보를 라벨로 추가
         for (int i = 0; i < size; i++) {
             String playerName = otherPlayersName.get(i);
-            int time = (otherPlayersTime != null && i < otherPlayersTime.length) 
-                ? otherPlayersTime[i] 
-                : 0;
             String tileCount = otherPlayersTileCount.get(i);
             
             // 플레이어의 이름과 시간을 담을 라벨
