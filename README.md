@@ -26,6 +26,9 @@
 - 실시간 채팅
 > 게임 중 사용자 간 소통을 위한 **채팅 기능**
 
+### ❄️ 화면 설명
+<img width="797" alt="image" src="https://github.com/user-attachments/assets/dc257d45-e113-4838-96bd-25a55d7d6a70" />
+
 ### 🌏 개발 환경 ・ Eclipse IDE
 
 ### 🌀 개발 언어 ・ Java
