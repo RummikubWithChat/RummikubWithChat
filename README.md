@@ -1,7 +1,8 @@
 # RummikubWithChat
 ![image](https://github.com/user-attachments/assets/05c4eefd-7e5e-441f-a360-21b3494f5efe)
 ###### 📚 3학년 2학기 네트워크프로그래밍 텀프로젝트
-###### 🔎 참고 오픈소스 https://github.com/jaehyeok3017/Rummikub.git
+###### 👩‍💻 개발자 ・ 양예영, 김가영
+###### 🔎 참고 오픈소스 ・ https://github.com/jaehyeok3017/Rummikub.git
 
 ---
 
